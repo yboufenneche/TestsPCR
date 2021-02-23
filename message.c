@@ -17,19 +17,18 @@
 /**
  * Decoupe du message 
  * Retourne 1 si il n'y a pas eu de problème
- * Retourne 0 si il y a eu un problème - errno est mis � EINVAL dans ce cas.
+ * Retourne 0 si il y a eu un problème - errno est mis à EINVAL dans ce cas.
  * ATTENTION:
  *     Les variables nTest, type et valeur doivent 
  * être allouées avant l'appel à decoupe
  */
-int decoupe(char *message,      /* Source a découper */
-	    char *nTest,        /* no du test PCR concerne */
-	    char *type,         /* Type du message */
-	    char *valeur        /* Valeur associée au message */
+int decoupe(char *message,  /* Source a découper */
+	    char *nTest,          /* no du test PCR concerne */
+	    char *type,           /* Type du message */
+	    char *valeur          /* Valeur associée au message */
 	    )
 {
-  int nb=sscanf(message, "|%[^|]|%[^|]|%[^|]|\n", 
-	 nTest, type, valeur);
+  int nb=sscanf(message, "|%[^|]|%[^|]|%[^|]|\n", nTest, type, valeur);
   if (nb == 3)
     return 1;
   else  {

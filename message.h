@@ -10,7 +10,7 @@
  * être allouées avant l'appel à decoupe
  */
 
-int decoupe(char *message,      /* Source a découper */
+int decoupe(char *message,  /* Source a découper */
 	    char *nTest,        /* no de carte concernee */
 	    char *type,         /* Type du message */
 	    char *valeur        /* Valeur associée au message */

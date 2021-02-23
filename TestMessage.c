@@ -9,7 +9,7 @@
  */
 int main(int argc, char **argv)
 {
-  char emeteur[255], type[255], valeur[255];
+  char nTest[255], type[255], valeur[255];
   int decoupeOk;
 
   aleainit();
@@ -21,20 +21,20 @@ int main(int argc, char **argv)
   char *msg = message("0001000000000000", "Demande", valeur);
   printf("Le message est : *%s*\n", msg);
 
-  decoupeOk = decoupe(msg, emeteur, type, valeur);
+  decoupeOk = decoupe(msg, nTest, type, valeur);
   if (!decoupeOk) {
     printf("Erreur de découpage!!\n");
     exit(0);
   }
 
-  printf("La test PCR est : %s\n", emeteur);
+  printf("Le test PCR est : %s\n", nTest);
   printf("Le type du message est : %s\n", type);
   printf("La valeur est : %s\n", valeur);
   
   printf("\n\nMaintenant, on coupe le message pour avoir une erreur.\n");
   msg[5] = '\0';
   printf("message = %s\n", msg);
-  decoupeOk = decoupe(msg, emeteur, type, valeur);
+  decoupeOk = decoupe(msg, nTest, type, valeur);
   if (!decoupeOk) {
     printf("Erreur de découpage!!\n");
     perror("TestMessage (decoupe)");

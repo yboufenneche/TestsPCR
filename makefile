@@ -18,6 +18,9 @@ lectureEcriture.o: lectureEcriture.c lectureEcriture.h
 TestLectureEcriture: lectureEcriture.o TestLectureEcriture.c
 	gcc lectureEcriture.o TestLectureEcriture.c -o TestLectureEcriture
 
+Terminal: Terminal.o alea.o message.o lectureEcriture.o
+	gcc -Wall Terminal.o alea.o message.o lectureEcriture.o -o Terminal
+
 clean:	
 	rm -f *.o *~ 
 

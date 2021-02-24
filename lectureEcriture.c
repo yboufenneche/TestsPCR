@@ -23,8 +23,8 @@ char * litLigne(int fd)
   do {
     if( ((err = read(fd, &c[i],1)) <= 0) || (i == TAILLEBUF)){
       free(c);
-      // read a positionné l'erreur si il y en a une dans le read
-      // Sinon, c'est que l'on dépasse TAILLEBUF
+      // read a positionnÃ© l'erreur si il y en a une dans le read
+      // Sinon, c'est que l'on dÃ©passe TAILLEBUF
       if (i == TAILLEBUF)
 	errno = EIO; // ligne trop grande
       return NULL;
@@ -40,5 +40,5 @@ int ecritLigne(int fd, char *c)
   int taille = strlen(c);
   if(write(fd, c, taille) == taille)
     return 1;
-  else return 0; // errno est positionné par write.
+  else return 0; // errno est positionnï¿½ par write.
 }

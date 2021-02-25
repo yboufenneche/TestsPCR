@@ -21,6 +21,12 @@ TestLectureEcriture: lectureEcriture.o TestLectureEcriture.c
 Terminal: Terminal.o alea.o message.o lectureEcriture.o
 	gcc -Wall Terminal.o alea.o message.o lectureEcriture.o -o Terminal
 
+resultats.o: resultats.c resultats.h
+	gcc -c -Wall resultats.c
+
+Validation: Validation.o message.o lectureEcriture.o resultats.o
+	gcc -Wall Validation.o message.o lectureEcriture.o resultats.o -o Validation
+
 clean:	
 	rm -f *.o *~ 
 

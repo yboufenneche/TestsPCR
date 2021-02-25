@@ -40,5 +40,5 @@ int ecritLigne(int fd, char *c)
   int taille = strlen(c);
   if(write(fd, c, taille) == taille)
     return 1;
-  else return 0; // errno est positionn� par write.
+  else return 0; // errno est positionné par write.
 }

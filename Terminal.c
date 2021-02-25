@@ -17,12 +17,15 @@ int main (int argc, char *argv[]){
     char *c;
 
     // nombre de lignes (tests) dans le fichier "tests.lst"
-    nbrLignes = atoi(argv[3]);
+    //nbrLignes = atoi(argv[3]);
 
     // récupérer les descripteurs de fichiers fournis à travers la ligne de commandes
-    if (argc == 4){
+    if (argc == 3){
         fdw = atoi(argv[1]);
         fdr = atoi(argv[2]);
+
+        printf("fdw = %d\n", fdw);
+        printf("fdr = %d\n", fdr);
     }
 
     /* récupérer un numéro de test aléatoire.
@@ -50,7 +53,7 @@ int main (int argc, char *argv[]){
     //printf("Demande de validation: numéro du test [%s], durée de validité [%s]\n", nTest, valeur);
 
     // envoyer la demande
-    if (ecritLigne(5, requete) == 0){
+    if (ecritLigne(fdw, requete) == 0){
         fprintf(stderr, "Impossible d'envoyer la demande !");
         exit(0);
     }

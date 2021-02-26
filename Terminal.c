@@ -11,16 +11,16 @@ int main (int argc, char *argv[]){
 
     int fdr, fdw, fdl, decoupeOk;
     int nLigne, nbrLignes, validation;
-    char nTest[255], type[255], valeur[255];
+    char *nTest, type[255], valeur[255];
     char *requete, *reponse;
     int i;
     char *c;
 
     // nombre de lignes (tests) dans le fichier "tests.lst"
-    //nbrLignes = atoi(argv[3]);
+    nbrLignes = atoi(argv[3]);
 
     // récupérer les descripteurs de fichiers fournis à travers la ligne de commandes
-    if (argc == 3){
+    if (argc == 4){
         fdw = atoi(argv[1]);
         fdr = atoi(argv[2]);
 
@@ -32,24 +32,24 @@ int main (int argc, char *argv[]){
        On commence par génerer un numéro de ligne alétoire,
        après on récupère le numéro de test correspondant à cette ligne dans le fichier "tests.lst"
     */
-    // aleainit();
-    // nLigne = alea(1,nbrLignes);
-    // fdl = open("tests.lst", O_RDONLY);
-    // i = 1;
-    // while (i < nLigne)
-    // {
-    //     litLigne(fdl);
-    //     i++;
-    // }
+    aleainit();
+    nLigne = alea(1,nbrLignes);
+    fdl = open("tests.lst", O_RDONLY);
+    i = 1;
+    while (i < nLigne)
+    {
+        litLigne(fdl);
+        i++;
+    }
     // récupérer le numéro de test dans la ligne concernée sans prendre en compte du caractère de retour à la ligne "\n"
-    //strncpy (nTest, litLigne(fdl), 17);
-    //close(fdl);
+    nTest = suppRetourChariot(litLigne(fdl));
+    close(fdl);
 
     //générer un durée de validité aléatoire entre 1000 et 2000 secondes
     sprintf(valeur, "%d", alea(1000, 2000));
 
     // générer une demande
-    requete = message("0001000000000001", "Demande", valeur);
+    requete = message(nTest, "Demande", valeur);
     //printf("Demande de validation: numéro du test [%s], durée de validité [%s]\n", nTest, valeur);
 
     // envoyer la demande

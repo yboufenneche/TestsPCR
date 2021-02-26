@@ -5,3 +5,4 @@
 
 char * litLigne(int fd);
 int ecritLigne(int fd, char *c);
+char * suppRetourChariot (char *str);

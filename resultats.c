@@ -6,17 +6,21 @@
 t_test trouverTest(int fd, char* nTest){
     int trouve = 0;
     char *ligne;
-    char *p;
+    char *token;
     t_test tes;
     do{
         ligne = litLigne(fd);
-        p = strtok(ligne, " ");
-        if (strcmp(nTest, p) == 0){
+        token = strtok(ligne, " ");
+        
+        if (strcmp(nTest, token) == 0){
             tes.nTest = nTest;
-            tes.date  = strtok(ligne, " ");;
-            tes.res   = strtok(ligne, " ");;
+            token = strtok(NULL, " ");
+            tes.date = token;
+            token = strtok(NULL, " ");
+            tes.res = suppRetourChariot(token);
             trouve = 1;
         }
     } while (!trouve && ligne != NULL); 
+    close(fd);
     return tes;  
 }

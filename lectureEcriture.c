@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <string.h>
 #include "lectureEcriture.h"
 #include <errno.h>
@@ -41,4 +42,17 @@ int ecritLigne(int fd, char *c)
   if(write(fd, c, taille) == taille)
     return 1;
   else return 0; // errno est positionné par write.
+}
+/* 
+ Supprimer le retour chariot "\n" à la fin d'une chaine de caractère
+*/
+char * suppRetourChariot (char *str){
+  char *s = str;
+  while (*str) {
+        if (*str == '\n') {
+            *str='\0';
+        }
+        str++;
+    }
+    return s;
 }

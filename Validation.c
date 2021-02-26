@@ -12,7 +12,7 @@
 int main (int argc, char ** argv){
     int fdr, fdw, decoupeOk;
     char nTest[255], type[255], valeur[255];
-    char *msg;
+    char *msg, *rep;
     time_t now;
     t_test test;
     
@@ -21,22 +21,35 @@ int main (int argc, char ** argv){
         fdw = atoi(argv[2]);
     }
     
-    // msg = litLigne(fdr);
-    // now = time(NULL);
+    msg = litLigne(fdr);
+    now = time(NULL);
     
-    // decoupeOk = decoupe(msg, nTest, type, valeur);
-    // if(!decoupeOk){
-    //     fprintf(stderr, "Erreur de découpage du message: %s\n", msg);
-    //     exit (EXIT_FAILURE);
-    // }
+    decoupeOk = decoupe(msg, nTest, type, valeur);
+    if(!decoupeOk){
+        fprintf(stderr, "Erreur de découpage du message: %s\n", msg);
+        exit (EXIT_FAILURE);
+    }
     
-    // printf("Demande de validation du test [%s], validité [%s]\n", nTest, valeur);
-    // fprintf(stdout, "%lu\n", (unsigned long)time(NULL));
+    printf("Demande de validation du test [%s], validité [%s]\n", nTest, valeur);
+
     int fd = open("resultats.an", O_RDONLY);
-    test = trouverTest (fd, "0001000000000011");
-    printf("%s %s %s\n", test.nTest, test.date, test.res);
-    close(fd);
-    printf("%s\n %s\n %s\n", test.nTest, test.date, test.res);
+    test = trouverTest (fd, nTest);
+    printf("[%s] [%s] [%s]\n", test.nTest, test.date, test.res);
 
-
+    unsigned long date_test = (time_t) test.date;
+    now = (unsigned long) time(NULL);
+    printf("Maintenant: %li\n", now);
+    long diff = (long) difftime(date_test, now);
+    printf("age du test: %li\n", date_test);
+    char *finPtr;
+    long validite = strtol(valeur, &finPtr, 10);
+    char * resultat = test.res;
+    if (strcmp(resultat, "negatif") == 0 && diff < validite){
+        rep = message(nTest, "Reponse", "1");
+    }
+    else{
+        rep = message(nTest, "Reponse", "0");
+    }
+    
+    ecritLigne(fdw, rep);
 }

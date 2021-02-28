@@ -38,11 +38,13 @@ int main(int argc, char **argv)
         exit ( EXIT_FAILURE );
 
     default:
+        /* code du père */
         wait(NULL);
         dup2(fdt2a, 0);
-        dup2(fda2t, 1);
+        dup2(fda2v, 1);
         fprintf(stderr, "Je suis Aquisition...\n");
-        fprintf(stdout, "|0001000000000001|Reponse|1|\n");
+        char *reqT = litLigne(0);
+        ecritLigne(1, reqT);
     }
 
     // créer un processus fils et le recouvrir avec Validation
@@ -63,11 +65,14 @@ int main(int argc, char **argv)
         exit (EXIT_FAILURE);
 
     default:
+        /* code du père */
         wait(NULL);
         dup2(fdv2a, 0);
-        dup2(fda2v, 1);
+        dup2(fda2t, 1);
         fprintf(stderr, "Je suis Aquisition -- Validation...\n");
-        //fprintf(stdout, "|0001000000000001|Demande|35000|\n");
+        char *repV = litLigne(0);
+        fprintf(stderr, "repV: %s\n", repV);
+        ecritLigne(1, repV);
     }
 
     return 0;

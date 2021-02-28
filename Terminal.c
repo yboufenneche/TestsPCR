@@ -23,11 +23,11 @@ int main(int argc, char *argv[])
     // récupérer les descripteurs de fichiers fournis à travers la ligne de commandes
     if (argc == 4)
     {
-        fdw = atoi(argv[1]);
-        fdr = atoi(argv[2]);
+        fdr = atoi(argv[1]) /*open(argv[1], O_RDONLY)*/;
+        fdw = atoi(argv[2]) /*open(argv[2], O_WRONLY)*/;
 
-        printf("fdw = %d\n", fdw);
-        printf("fdr = %d\n", fdr);
+        fprintf(stderr, "fdr = %d\n", fdr);
+        fprintf(stderr, "fdw = %d\n", fdw);
     }
 
     /* récupérer un numéro de test aléatoire.
@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
         litLigne(fdl);
         i++;
     }
+
     // récupérer le numéro de test dans la ligne concernée sans prendre en compte du caractère de retour à la ligne "\n"
     nTest = suppRetourChariot(litLigne(fdl));
     close(fdl);
@@ -54,15 +55,27 @@ int main(int argc, char *argv[])
     // générer une demande
     requete = message(nTest, "Demande", valeur);
 
+    // redirection
+    if(dup2(fdw, 1) < 0){
+        perror("Impossible de dupliquer le descripteur du fichier");
+        exit(EXIT_FAILURE);
+    }
+
     // envoyer la demande
-    if (ecritLigne(fdw, requete) == 0)
+    if (ecritLigne(1, requete) == 0)
     {
-        fprintf(stderr, "Impossible d'envoyer la demande !");
-        exit(0);
+        perror("Impossible d'envoyer la demande !\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // redirection
+    if(dup2(fdr, 0) < 0){
+        perror("Impossible de dupliquer le descripteur du fichier.\n");
+        exit(EXIT_FAILURE);
     }
 
     // récupérer la réponse
-    reponse = litLigne(fdr);
+    reponse = litLigne(0);
     fprintf(stderr, "Terminal, réponse reçu: %s \n", reponse);
 
     // découper la réponse
@@ -74,11 +87,11 @@ int main(int argc, char *argv[])
         validation = atoi(valeur);
         if (validation != 0)
         {
-            printf(" Le test n° %s est valide. \n", nTest);
+            fprintf(stderr, "Le test n° %s est valide. \n", nTest);
         }
         else
         {
-            printf(" Le test n° %s n'est pas valide. \n", nTest);
+            fprintf(stderr, "Le test n° %s n'est pas valide. \n", nTest);
         }
     }
     else

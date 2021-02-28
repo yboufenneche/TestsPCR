@@ -27,6 +27,9 @@ resultats.o: resultats.c resultats.h
 Validation: Validation.o message.o lectureEcriture.o resultats.o
 	gcc -Wall Validation.o message.o lectureEcriture.o resultats.o -o Validation
 
+Aquisition: Aquisition.o message.o lectureEcriture.o
+	gcc -Wall Aquisition.o message.o lectureEcriture.o -o Aquisition
+	
 clean:	
 	rm -f *.o *~ 
 

@@ -17,14 +17,25 @@ int main(int argc, char **argv)
     time_t now;
     test_t test;
 
+    // récupérer les descripteurs de fichiers fournis à travers la ligne de commandes
     if (argc == 3)
     {
         fdr = atoi(argv[1]);
         fdw = atoi(argv[2]);
+
+        fprintf(stderr, "fdr = %d\n", fdr);
+        fprintf(stderr, "fdw = %d\n", fdw);
+    }
+
+    // redirection
+    if(dup2(fdr, 0) < 0){
+        perror("Impossible de dupliquer le descripteur du fichier");
+        exit(EXIT_FAILURE);
     }
 
     // récupérer la demande de validation (le message)
-    msg = litLigne(fdr);
+    msg = litLigne(0);
+
     now = time(NULL);
 
     // tenter de découper le message
@@ -38,19 +49,24 @@ int main(int argc, char **argv)
     // chercher le test dans l'annuaire "resultats.an"
     int fd = open("resultats.ar", O_RDONLY);
     test = trouverTest(fd, nTest);
-    printf("Test trouvé: [%s] [%s] [%s]\n", test.nTest, test.date, test.res);
+    fprintf(stderr, "Test trouvé: [%s] [%s] [%s]\n", test.nTest, test.date, test.res);
 
     // convertir la date du test du chaîne à long
-    char *finPtr;
-    long date_test = (strtol(test.date, &finPtr, 10));
+    long date_test = (strtol(test.date, NULL, 10));
 
     // calculer l'age du test
     now = (long)time(NULL);
     long diff = (long)difftime(now, date_test);
 
     // convertir la durée de validité du test du chaîne à long
-    long validite = (strtol(valeur, &finPtr, 10));
+    long validite = (strtol(valeur, NULL, 10));
     char *resultat = test.res;
+
+    // redirection
+    if(dup2(fdw, 1) < 0){
+        perror("Impossible de dupliquer le descripteur du fichier");
+        exit(EXIT_FAILURE);
+    }
 
     // préparer la réponse
     if (strcmp(resultat, "negatif") == 0 && diff < validite)
@@ -63,5 +79,7 @@ int main(int argc, char **argv)
     }
 
     // écrire la réponse dans le fichier
-    ecritLigne(fdw, rep);
+    ecritLigne(1, rep);
+
+    return 0;
 }

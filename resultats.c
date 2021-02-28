@@ -6,6 +6,9 @@
 #include "lectureEcriture.h"
 #include <string.h>
 
+/*
+ récupérer un test depuis un archive.
+*/
 test_t trouverTest(int fd, char* nTest){
     int trouve = 0;
     char *ligne;

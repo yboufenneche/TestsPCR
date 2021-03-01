@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     nTest = suppRetourChariot(litLigne(fdl));
     close(fdl);
 
-    //générer un durée de validité aléatoire entre 1000 et 2000 secondes
+    //générer une durée de validité aléatoire entre 1000 et 2000 secondes
     sprintf(valeur, "%d", alea(1000, 2000));
 
     // générer une demande

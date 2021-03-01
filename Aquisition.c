@@ -8,72 +8,56 @@
 #include "alea.h"
 #include "message.h"
 
+#define CCENTRE "0001"
+
 int main(int argc, char **argv)
 {
-    int fdt2a, fda2t, fda2v, fdv2a;
-    int pid;
+    int fdt2a, fda2t, fda2v, fdv2a, fdi2a, fda2i;
 
-    char arg1[20], arg2[20];
+    fdt2a = open("t2a.txt", O_RDONLY);
+    fda2t = open("a2t.txt", O_WRONLY);
+    fdv2a = open("v2a.txt", O_RDONLY);
+    fda2v = open("a2v.txt", O_WRONLY);
+    fdi2a = open("i2a.txt", O_RDONLY);
+    fda2i = open("a2i.txt", O_WRONLY);
 
-    fdt2a = open("t2a.txt", O_RDWR);
-    fda2t = open("a2t.txt", O_RDWR);
-    fdv2a = open("v2a.txt", O_RDWR);
-    fda2v = open("a2v.txt", O_RDWR);
+    char *ligne, *mes;
+    char nTest[17], type[7], valeur[10];
 
-    // créer un processus fils et le recouvrir avec Terminal
-    switch (pid = fork())
-    {
-    case -1:
-        /* le fork a échoué */
-            fprintf(stderr, "Erreur de clonage...");
-            perror("fork");
-            exit(-1);
-    case 0:
-        /* code du fils */
-        sprintf(arg1, "%d", fda2t);
-        sprintf(arg2, "%d", fdt2a);
-        fprintf(stderr, "Je suis un fils...\n");
-        execlp("./Terminal", "Terminal", arg1, arg2, "8", NULL);
-        perror ("execlp");
-        exit ( EXIT_FAILURE );
+    int decoupeOk;
+    char code [5];
 
-    default:
-        /* code du père */
-        wait(NULL);
-        dup2(fdt2a, 0);
-        dup2(fda2v, 1);
-        fprintf(stderr, "Je suis Aquisition...\n");
-        char *reqT = litLigne(0);
-        ecritLigne(1, reqT);
-    }
+    /*
+      traiter les terminals
+    */
+    while ((ligne = litLigne(fdt2a)) != NULL){
+        mes = suppRetourChariot(ligne);
+        decoupe(mes, nTest, type, valeur);
+        strncpy(code, nTest, 4);
 
-    // créer un processus fils et le recouvrir avec Validation
-    switch (pid = fork())
-    {
-    case -1:
-        /* le fork a échoué */
-            fprintf(stderr, "Erreur de clonage...");
-            perror("fork");
-            exit(-1);
-    case 0:
-        /* code du fils */
-        sprintf(arg1, "%d", fda2v);
-        sprintf(arg2, "%d", fdv2a);
-        fprintf(stderr, "Je suis un fils qui sera recouvert par Validation...\n");
-        execlp("./Validation", "Validation", arg1, arg2, NULL);
-        perror ("execlp");
-        exit (EXIT_FAILURE);
+        if (strcmp(code, CCENTRE) == 0){
+            ecritLigne(fda2v, ligne);
+            ecritLigne(fda2v, "\n");
+        }
+        else{
+            ecritLigne(fda2i, ligne);
+            ecritLigne(fda2i, "\n");
+        }
+    } 
 
-    default:
-        /* code du père */
-        wait(NULL);
-        dup2(fdv2a, 0);
-        dup2(fda2t, 1);
-        fprintf(stderr, "Je suis Aquisition -- Validation...\n");
-        char *repV = litLigne(0);
-        fprintf(stderr, "repV: %s\n", repV);
-        ecritLigne(1, repV);
-    }
+    /*
+      traiter les serveurs de validation
+    */
+    while ((ligne = litLigne(fdv2a)) != NULL){
+        ecritLigne(fda2t, ligne);
+    } 
+
+    /*
+      traiter les serveurs InterArchive
+    */
+    while ((ligne = litLigne(fdi2a)) != NULL){
+        ecritLigne(fda2t, ligne);
+    } 
 
     return 0;
 }

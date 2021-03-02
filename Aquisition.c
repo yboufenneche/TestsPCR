@@ -12,14 +12,17 @@
 
 int main(int argc, char **argv)
 {
-    int fdt2a, fda2t, fda2v, fdv2a, fdi2a, fda2i;
+    int fdt1Toa, fdaTot1, fdt2Toa, fdaTot2, fdaTov, fdvToa, fdiToa, fdaToi;
 
-    fdt2a = open("t2a.txt", O_RDONLY);
-    fda2t = open("a2t.txt", O_WRONLY);
-    fdv2a = open("v2a.txt", O_RDONLY);
-    fda2v = open("a2v.txt", O_WRONLY);
-    fdi2a = open("i2a.txt", O_RDONLY);
-    fda2i = open("a2i.txt", O_WRONLY);
+    fdt1Toa = open("t1Toa.txt", O_RDONLY);
+    fdaTot1 = open("aTot1.txt", O_WRONLY);
+    fdt2Toa = open("t2Toa.txt", O_RDONLY);
+    fdaTot2 = open("aTot2.txt", O_WRONLY);
+
+    fdvToa = open("vToa.txt", O_RDONLY);
+    fdaTov = open("aTov.txt", O_WRONLY);
+    fdiToa = open("iToa.txt", O_RDONLY);
+    fdaToi = open("aToi.txt", O_WRONLY);
 
     char *ligne, *mes;
     char nTest[17], type[7], valeur[10];
@@ -30,33 +33,33 @@ int main(int argc, char **argv)
     /*
       traiter les terminals
     */
-    while ((ligne = litLigne(fdt2a)) != NULL){
+    while ((ligne = litLigne(fdt1Toa)) != NULL){
         mes = suppRetourChariot(ligne);
         decoupe(mes, nTest, type, valeur);
         strncpy(code, nTest, 4);
 
         if (strcmp(code, CCENTRE) == 0){
-            ecritLigne(fda2v, ligne);
-            ecritLigne(fda2v, "\n");
+            ecritLigne(fdaTov, ligne);
+            ecritLigne(fdaTov, "\n");
         }
         else{
-            ecritLigne(fda2i, ligne);
-            ecritLigne(fda2i, "\n");
+            ecritLigne(fdaToi, ligne);
+            ecritLigne(fdaToi, "\n");
         }
     } 
 
     /*
       traiter les serveurs de validation
     */
-    while ((ligne = litLigne(fdv2a)) != NULL){
-        ecritLigne(fda2t, ligne);
+    while ((ligne = litLigne(fdvToa)) != NULL){
+        ecritLigne(fdaTot1, ligne);
     } 
 
     /*
       traiter les serveurs InterArchive
     */
-    while ((ligne = litLigne(fdi2a)) != NULL){
-        ecritLigne(fda2t, ligne);
+    while ((ligne = litLigne(fdiToa)) != NULL){
+        ecritLigne(fdaTot1, ligne);
     } 
 
     return 0;

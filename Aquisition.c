@@ -13,12 +13,12 @@
 
 int main(int argc, char **argv)
 {
-  int fdtToa[2], /*fdaTot[2], */fdaTov, /*fdvToa, fdiToa,*/ fdaToi;
+  int fdtToa[2], fdaTot[2], fdaTov, /*fdvToa, fdiToa,*/ fdaToi;
 
   fdtToa[0] = open("t1Toa.txt", O_RDONLY);
   fdtToa[1] = open("t2Toa.txt", O_RDONLY);
-  //fdaTot[0] = open("aTot1.txt", O_WRONLY);
-  //fdaTot[1] = open("aTot2.txt", O_WRONLY);
+  fdaTot[0] = open("aTot1.txt", O_WRONLY);
+  fdaTot[1] = open("aTot2.txt", O_WRONLY);
 
   //fdvToa = open("vToa.txt", O_RDONLY);
   fdaTov = open("aTov.txt", O_WRONLY);
@@ -36,6 +36,7 @@ int main(int argc, char **argv)
   //tailleMem = atoi(argv[2]);
 
   tra_t *memoire = calloc(tailleMem, sizeof(tra_t));
+  tra_t e;
 
   /*
       traiter les terminaux
@@ -43,11 +44,14 @@ int main(int argc, char **argv)
   int i = 0;
   while (i < nbTerm)
   {
-    printf("memoire[%d] = %s:%s\n", i, memoire[i].nTest, memoire[i].ter);
     ligne = litLigne(fdtToa[i]);
     mes = suppRetourChariot(ligne);
     decoupe(mes, nTest, type, valeur);
     strncpy(code, nTest, 4);
+
+    sprintf(e.nTest, "%s", nTest);
+    sprintf(e.ter, "%d", fdaTot[i]);
+    ajouterEntree(memoire, e);
 
     if (strcmp(code, CCENTRE) == 0)
     {
@@ -61,6 +65,9 @@ int main(int argc, char **argv)
     }
     i++;
   }
+
+  printf("memoire[%d] = %s:%s\n", 0, memoire[0].nTest, memoire[0].ter);
+  printf("memoire[%d] = %s:%s\n", 1, memoire[1].nTest, memoire[1].ter);
 
   /*
       traiter les serveurs de validation

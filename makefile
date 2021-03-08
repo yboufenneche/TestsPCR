@@ -30,8 +30,8 @@ Validation: Validation.o message.o lectureEcriture.o resultats.o
 memoire.o: memoire.c memoire.h
 	gcc -c -Wall memoire.c
 
-Aquisition: Aquisition.o message.o lectureEcriture.o
-	gcc -Wall Aquisition.o memoire.o message.o lectureEcriture.o -o Aquisition
+Aquisition: Aquisition.o message.o lectureEcriture.o memoire.o
+	gcc -Wall Aquisition.o message.o lectureEcriture.o memoire.o -o Aquisition
 	
 clean:	
 	rm -f *.o *~ 

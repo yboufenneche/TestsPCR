@@ -4,7 +4,8 @@
 #include <fcntl.h>
 #include <string.h>
 #include "memoire.h"
-// ****
+
+// **** ajouter une entrée dans la table de routage
 void ajouterEntree(tra_t * memoire, tra_t element){
     int i = 0;
     tra_t e;
@@ -18,9 +19,9 @@ void ajouterEntree(tra_t * memoire, tra_t element){
     memoire[i] = element;
 }
 
-// ****
+// **** supprimer une entrée de la table de routage
 void supprimerEntree(tra_t * memoire, tra_t element){
-int i = 0;
+    int i = 0;
     tra_t e;
     do{
         e = memoire[i];
@@ -33,6 +34,17 @@ int i = 0;
     sprintf(e.ter, "%s", "");
     memoire[i] = e;
 }
-// tra_t * initMemoire(int n){
 
-// }
+// **** trouver le descripteur de fichier lié à un terminal 
+char * trouverEntree(tra_t * memoire, char * nTest){
+    int i = 0;
+    tra_t e;
+    do{
+        e = memoire[i];
+        if (strcmp(e.nTest, nTest) == 0){
+            break;
+        }
+        i++;
+    } while (1);
+    return memoire[i].ter;
+}

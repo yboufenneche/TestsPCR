@@ -13,16 +13,17 @@
 
 int main(int argc, char **argv)
 {
-  int fdtToa[2], fdaTot[2], fdaTov, /*fdvToa, fdiToa,*/ fdaToi;
+  int fdtToa[2], fdaTot[2], fdaTov, fdvToa, fdiToa, fdaToi;
+  int fd;
 
   fdtToa[0] = open("t1Toa.txt", O_RDONLY);
   fdtToa[1] = open("t2Toa.txt", O_RDONLY);
   fdaTot[0] = open("aTot1.txt", O_WRONLY);
   fdaTot[1] = open("aTot2.txt", O_WRONLY);
 
-  //fdvToa = open("vToa.txt", O_RDONLY);
+  fdvToa = open("vToa.txt", O_RDONLY);
   fdaTov = open("aTov.txt", O_WRONLY);
-  //fdiToa = open("iToa.txt", O_RDONLY);
+  fdiToa = open("iToa.txt", O_RDONLY);
   fdaToi = open("aToi.txt", O_WRONLY);
 
   char *ligne, *mes;
@@ -66,24 +67,27 @@ int main(int argc, char **argv)
     i++;
   }
 
-  printf("memoire[%d] = %s:%s\n", 0, memoire[0].nTest, memoire[0].ter);
-  printf("memoire[%d] = %s:%s\n", 1, memoire[1].nTest, memoire[1].ter);
-
   /*
       traiter les serveurs de validation
     */
-  // while ((ligne = litLigne(fdvToa)) != NULL)
-  // {
-  //   ecritLigne(fdaTot1, ligne);
-  // }
+  while ((ligne = litLigne(fdvToa)) != NULL)
+  {
+    decoupe(ligne, nTest, type, valeur);
+    printf("%s", ligne);
+    fd = atoi(trouverEntree(memoire, nTest));
+    ecritLigne(fd, ligne);
+  }
 
   /*
       traiter les serveurs InterArchive
     */
-  // while ((ligne = litLigne(fdiToa)) != NULL)
-  // {
-  //   ecritLigne(fdaTot1, ligne);
-  // }
+  while ((ligne = litLigne(fdiToa)) != NULL)
+  {
+    decoupe(ligne, nTest, type, valeur);
+    printf("%s", ligne);
+    fd = atoi(trouverEntree(memoire, nTest));
+    ecritLigne(fd, ligne);
+  }
 
   return 0;
 }

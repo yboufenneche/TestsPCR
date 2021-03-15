@@ -45,24 +45,27 @@ int main(int argc, char **argv)
   int i = 0;
   while (i < nbTerm)
   {
-    ligne = litLigne(fdtToa[i]);
-    mes = suppRetourChariot(ligne);
-    decoupe(mes, nTest, type, valeur);
-    strncpy(code, nTest, 4);
-
-    sprintf(e.nTest, "%s", nTest);
-    sprintf(e.ter, "%d", fdaTot[i]);
-    ajouterEntree(memoire, e);
-
-    if (strcmp(code, CCENTRE) == 0)
+    while((ligne = litLigne(fdtToa[i]))!= NULL)
     {
-      ecritLigne(fdaTov, ligne);
-      ecritLigne(fdaTov, "\n");
-    }
-    else
-    {
-      ecritLigne(fdaToi, ligne);
-      ecritLigne(fdaToi, "\n");
+      printf("%s", ligne);
+      mes = suppRetourChariot(ligne);
+      decoupe(mes, nTest, type, valeur);
+      strncpy(code, nTest, 4);
+
+      sprintf(e.nTest, "%s", nTest);
+      sprintf(e.ter, "%d", fdaTot[i]);
+      ajouterEntree(memoire, e);
+
+      if (strcmp(code, CCENTRE) == 0)
+      {
+        ecritLigne(fdaTov, ligne);
+        ecritLigne(fdaTov, "\n");
+      }
+      else
+      {
+        ecritLigne(fdaToi, ligne);
+        ecritLigne(fdaToi, "\n");
+      }
     }
     i++;
   }
@@ -72,8 +75,8 @@ int main(int argc, char **argv)
     */
   while ((ligne = litLigne(fdvToa)) != NULL)
   {
-    decoupe(ligne, nTest, type, valeur);
     printf("%s", ligne);
+    decoupe(ligne, nTest, type, valeur);
     fd = atoi(trouverEntree(memoire, nTest));
     ecritLigne(fd, ligne);
   }
@@ -83,8 +86,8 @@ int main(int argc, char **argv)
     */
   while ((ligne = litLigne(fdiToa)) != NULL)
   {
-    decoupe(ligne, nTest, type, valeur);
     printf("%s", ligne);
+    decoupe(ligne, nTest, type, valeur);
     fd = atoi(trouverEntree(memoire, nTest));
     ecritLigne(fd, ligne);
   }

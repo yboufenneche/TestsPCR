@@ -34,7 +34,7 @@ int main(int argc, char **argv)
   char code[5];
 
   nbTerm = atoi(argv[1]);
-  //tailleMem = atoi(argv[2]);
+  tailleMem = atoi(argv[2]);
 
   tra_t *memoire = calloc(tailleMem, sizeof(tra_t));
   tra_t e;
@@ -45,7 +45,8 @@ int main(int argc, char **argv)
   int i = 0;
   while (i < nbTerm)
   {
-    while((ligne = litLigne(fdtToa[i]))!= NULL)
+    printf("\nTraitement de Terminal %d...\n", i+1);
+    while ((ligne = litLigne(fdtToa[i])) != NULL)
     {
       printf("%s", ligne);
       mes = suppRetourChariot(ligne);
@@ -53,7 +54,7 @@ int main(int argc, char **argv)
       strncpy(code, nTest, 4);
 
       sprintf(e.nTest, "%s", nTest);
-      sprintf(e.ter, "%d", fdaTot[i]);
+      sprintf(e.fdesc, "%d", fdaTot[i]);
       ajouterEntree(memoire, e);
 
       if (strcmp(code, CCENTRE) == 0)
@@ -73,6 +74,7 @@ int main(int argc, char **argv)
   /*
       traiter les serveurs de validation
     */
+  printf("\nTraitement du serveur Validation...\n");
   while ((ligne = litLigne(fdvToa)) != NULL)
   {
     printf("%s", ligne);
@@ -84,12 +86,21 @@ int main(int argc, char **argv)
   /*
       traiter les serveurs InterArchive
     */
+  printf("\nTraitement du serveur InterArchive...\n");
   while ((ligne = litLigne(fdiToa)) != NULL)
   {
     printf("%s", ligne);
     decoupe(ligne, nTest, type, valeur);
-    fd = atoi(trouverEntree(memoire, nTest));
-    ecritLigne(fd, ligne);
+    if (strcmp(valeur, "Reponse") == 0)
+    {
+      fd = atoi(trouverEntree(memoire, nTest));
+      ecritLigne(fd, ligne);
+    }
+    // else{
+    //   sprintf(e.nTest, "%s", nTest);
+    //   sprintf(e.fdesc, "%d", fdaToi);
+    //   ajouterEntree(memoire, e);
+    // }
   }
 
   return 0;

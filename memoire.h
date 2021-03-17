@@ -1,7 +1,7 @@
 typedef struct entree_tra
 {
     char nTest[17];
-    char ter[3];
+    char fdesc[3];
 } tra_t;
 
 void ajouterEntree(tra_t * memoire, tra_t element);

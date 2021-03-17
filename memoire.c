@@ -31,7 +31,7 @@ void supprimerEntree(tra_t * memoire, tra_t element){
         i++;
     } while (1);
     sprintf(e.nTest , "%s", "");
-    sprintf(e.ter, "%s", "");
+    sprintf(e.fdesc, "%s", "");
     memoire[i] = e;
 }
 
@@ -46,5 +46,5 @@ char * trouverEntree(tra_t * memoire, char * nTest){
         }
         i++;
     } while (1);
-    return memoire[i].ter;
+    return memoire[i].fdesc;
 }

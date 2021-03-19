@@ -11,15 +11,39 @@
 
 #define CCENTRE "0001"
 
+/*
+* recevoir les demandes des treminaux
+*/
+void *traiterTerminal(){
+
+}
+
+/*
+* recevoir les réponses du serveur de validation
+*/
+void *traiterValidation(){
+
+}
+
+/*
+* recevoir les demandes et les répondes du serveur InterArchive
+*/
+void *traiterInterArchive(){
+
+}
+
 int main(int argc, char **argv)
 {
-  int fdtToa[2], fdaTot[2], fdaTov, fdvToa, fdiToa, fdaToi;
+  int fdtToa[3], fdaTot[3], fdaTov, fdvToa, fdiToa, fdaToi;
   int fd;
 
   fdtToa[0] = open("t1Toa.txt", O_RDONLY);
   fdtToa[1] = open("t2Toa.txt", O_RDONLY);
+  fdtToa[2] = open("t3Toa.txt", O_RDONLY);
+
   fdaTot[0] = open("aTot1.txt", O_WRONLY);
   fdaTot[1] = open("aTot2.txt", O_WRONLY);
+  fdaTot[2] = open("aTot3.txt", O_WRONLY);
 
   fdvToa = open("vToa.txt", O_RDONLY);
   fdaTov = open("aTov.txt", O_WRONLY);

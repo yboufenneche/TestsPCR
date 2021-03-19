@@ -1,4 +1,4 @@
-all:	 TestMessage TestRedirection TestLectureEcriture
+all:	 TestMessage TestRedirection TestLectureEcriture Terminal Validation Aquisition 
 
 message.o: message.c message.h
 	gcc -Wall -c message.c
@@ -18,23 +18,23 @@ lectureEcriture.o: lectureEcriture.c lectureEcriture.h
 TestLectureEcriture: lectureEcriture.o TestLectureEcriture.c
 	gcc lectureEcriture.o TestLectureEcriture.c -o TestLectureEcriture
 
-Terminal: Terminal.o alea.o message.o lectureEcriture.o
+Terminal: Terminal.o alea.o message.o lectureEcriture.o Terminal.c
 	gcc -Wall Terminal.o alea.o message.o lectureEcriture.o -o Terminal
 
 resultats.o: resultats.c resultats.h
 	gcc -c -Wall resultats.c
 
-Validation: Validation.o message.o lectureEcriture.o resultats.o
+Validation: Validation.o message.o lectureEcriture.o resultats.o Validation.c
 	gcc -Wall Validation.o message.o lectureEcriture.o resultats.o -o Validation
 
 memoire.o: memoire.c memoire.h
 	gcc -c -Wall memoire.c
 
-Aquisition: Aquisition.o message.o lectureEcriture.o memoire.o
+Aquisition: Aquisition.o message.o lectureEcriture.o memoire.o Aquisition.c
 	gcc -Wall Aquisition.o message.o lectureEcriture.o memoire.o -o Aquisition
 	
 clean:	
 	rm -f *.o *~ 
 
 cleanall: clean
-	rm TestRedirection TestMessage TestLectureEcriture
+	rm TestRedirection TestMessage TestLectureEcriture Terminal Validation Aquisition

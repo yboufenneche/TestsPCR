@@ -11,31 +11,26 @@
 
 #define CCENTRE "0001"
 
-/*
-* recevoir les demandes des treminaux
-*/
-void *traiterTerminal(){
+int nbTerm, tailleMem;
+tra_t *memoire;
+int *fdtToa, *fdaTot, fdaTov, fdvToa, fdiToa, fdaToi;
 
-}
-
-/*
-* recevoir les réponses du serveur de validation
-*/
-void *traiterValidation(){
-
-}
+void traiterTerminal(int term);
+void traiterValidation();
+void traiterInterArchive();
 
 /*
-* recevoir les demandes et les répondes du serveur InterArchive
+* programme principal
 */
-void *traiterInterArchive(){
-
-}
 
 int main(int argc, char **argv)
 {
-  int fdtToa[3], fdaTot[3], fdaTov, fdvToa, fdiToa, fdaToi;
-  int fd;
+
+  nbTerm = atoi(argv[1]);
+  tailleMem = atoi(argv[2]);
+  fdtToa = malloc(nbTerm * sizeof(int));
+  fdaTot = malloc(nbTerm * sizeof(int));
+  memoire = calloc(tailleMem, sizeof(tra_t));
 
   fdtToa[0] = open("t1Toa.txt", O_RDONLY);
   fdtToa[1] = open("t2Toa.txt", O_RDONLY);
@@ -50,82 +45,134 @@ int main(int argc, char **argv)
   fdiToa = open("iToa.txt", O_RDONLY);
   fdaToi = open("aToi.txt", O_WRONLY);
 
-  char *ligne, *mes;
-  char nTest[17], type[7], valeur[10];
-
   //int decoupeOk;
-  int nbTerm, tailleMem;
-  char code[5];
 
-  nbTerm = atoi(argv[1]);
-  tailleMem = atoi(argv[2]);
-
-  tra_t *memoire = calloc(tailleMem, sizeof(tra_t));
-  tra_t e;
+  
 
   /*
       traiter les terminaux
     */
-  int i = 0;
-  while (i < nbTerm)
-  {
-    printf("\nTraitement de Terminal %d...\n", i+1);
-    while ((ligne = litLigne(fdtToa[i])) != NULL)
-    {
-      printf("%s", ligne);
-      mes = suppRetourChariot(ligne);
-      decoupe(mes, nTest, type, valeur);
-      strncpy(code, nTest, 4);
-
-      sprintf(e.nTest, "%s", nTest);
-      sprintf(e.fdesc, "%d", fdaTot[i]);
-      ajouterEntree(memoire, e);
-
-      if (strcmp(code, CCENTRE) == 0)
-      {
-        ecritLigne(fdaTov, ligne);
-        ecritLigne(fdaTov, "\n");
-      }
-      else
-      {
-        ecritLigne(fdaToi, ligne);
-        ecritLigne(fdaToi, "\n");
-      }
-    }
-    i++;
-  }
 
   /*
       traiter les serveurs de validation
     */
-  printf("\nTraitement du serveur Validation...\n");
-  while ((ligne = litLigne(fdvToa)) != NULL)
+  // printf("\nTraitement du serveur Validation...\n");
+  // while ((ligne = litLigne(fdvToa)) != NULL)
+  // {
+  //   printf("%s", ligne);
+  //   decoupe(ligne, nTest, type, valeur);
+  //   fd = atoi(trouverEntree(memoire, nTest));
+  //   ecritLigne(fd, ligne);
+  // }
+
+  /*
+      traiter les serveurs InterArchive
+    */
+
+
+  traiterTerminal(0);
+  traiterTerminal(1);
+  traiterTerminal(2);
+
+  traiterValidation();
+  traiterInterArchive();
+
+  return 0;
+}
+
+/*
+* recevoir les demandes des treminaux
+*/
+void traiterTerminal(int term)
+{
+  char *ligne/*, *mes*/;
+  char nTest[17], type[8], valeur[10];
+  tra_t e;
+  char code[5];
+
+  while (1)
   {
+    if ((ligne = litLigne(fdtToa[term])) == NULL)
+    {
+      break;
+    }
+
+    printf("\nTraitement du Terminal %d...\n", term);
+
+    printf("%s", ligne);
+    //mes = suppRetourChariot(ligne);
+    decoupe(ligne, nTest, type, valeur);
+    strncpy(code, nTest, 4);
+
+    sprintf(e.nTest, "%s", nTest);
+    sprintf(e.fdesc, "%d", fdaTot[term]);
+    ajouterEntree(memoire, e);
+
+    if (strcmp(code, CCENTRE) == 0)
+    {
+      ecritLigne(fdaTov, ligne);
+      //ecritLigne(fdaTov, "\n");
+    }
+    else
+    {
+      ecritLigne(fdaToi, ligne);
+      //ecritLigne(fdaToi, "\n");
+    }
+  }
+}
+
+/*
+* recevoir les réponses du serveur de validation
+*/
+void traiterValidation()
+{
+  char *ligne;
+  char nTest[17], type[8], valeur[10];
+  int fd;
+
+  printf("\nTraitement du serveur Validation...\n");
+  while (1)
+  {
+    if((ligne = litLigne(fdvToa)) == NULL){
+      break;
+    }
     printf("%s", ligne);
     decoupe(ligne, nTest, type, valeur);
     fd = atoi(trouverEntree(memoire, nTest));
     ecritLigne(fd, ligne);
   }
+}
 
-  /*
-      traiter les serveurs InterArchive
-    */
+/*
+* recevoir les demandes et les répondes du serveur InterArchive
+*/
+void traiterInterArchive()
+{
+  char *ligne, *mes;
+  char nTest[17], type[8], valeur[10];
+  tra_t e;
+  int fd;
+
   printf("\nTraitement du serveur InterArchive...\n");
-  while ((ligne = litLigne(fdiToa)) != NULL)
+  while (1)
   {
+    if ((ligne = litLigne(fdiToa)) == NULL)
+    {
+      break;
+    }
     printf("%s", ligne);
+    //mes = suppRetourChariot(ligne);
     decoupe(ligne, nTest, type, valeur);
     if (strcmp(valeur, "Reponse") == 0)
     {
       fd = atoi(trouverEntree(memoire, nTest));
       ecritLigne(fd, ligne);
     }
-    // else{
-    //   sprintf(e.nTest, "%s", nTest);
-    //   sprintf(e.fdesc, "%d", fdaToi);
-    //   ajouterEntree(memoire, e);
-    // }
+  
+    else{
+      sprintf(e.nTest, "%s", nTest);
+      sprintf(e.fdesc, "%d", fdaToi);
+      ajouterEntree(memoire, e);
+    }
   }
-
-  return 0;
 }

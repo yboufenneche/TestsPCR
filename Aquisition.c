@@ -4,6 +4,8 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <pthread.h>
+#include <semaphore.h>
 #include "lectureEcriture.h"
 #include "alea.h"
 #include "message.h"
@@ -15,9 +17,11 @@ int nbTerm, tailleMem;
 tra_t *memoire;
 int *fdtToa, *fdaTot, fdaTov, fdvToa, fdiToa, fdaToi;
 
-void traiterTerminal(int term);
-void traiterValidation();
-void traiterInterArchive();
+sem_t vide, mutex;
+
+void *traiterTerminal(void *arg);
+void *traiterValidation();
+void *traiterInterArchive();
 
 /*
 * programme principal
@@ -30,7 +34,7 @@ int main(int argc, char **argv)
   tailleMem = atoi(argv[2]);
   fdtToa = malloc(nbTerm * sizeof(int));
   fdaTot = malloc(nbTerm * sizeof(int));
-  memoire = calloc(tailleMem, sizeof(tra_t));
+  memoire = (tra_t*) malloc(tailleMem * sizeof(tra_t));
 
   fdtToa[0] = open("t1Toa.txt", O_RDONLY);
   fdtToa[1] = open("t2Toa.txt", O_RDONLY);
@@ -45,50 +49,48 @@ int main(int argc, char **argv)
   fdiToa = open("iToa.txt", O_RDONLY);
   fdaToi = open("aToi.txt", O_WRONLY);
 
-  //int decoupeOk;
+  sem_init(&mutex, 0, 1);
+  sem_init(&vide, 0, tailleMem);
 
+  pthread_t thread_term[nbTerm];
+  pthread_t thread_valid;
+  pthread_t thread_inter;
+
+  // threads Terminaux
+  for (int i = 0; i < nbTerm; i++)
+  {
+    pthread_create(&thread_term[i], NULL, traiterTerminal, (void *) (intptr_t) i);
+  }
+
+  for (int i = 0; i < nbTerm; i++)
+  {
+    pthread_join(thread_term[i], NULL);
+  }
+
+  // thread Validation et thread Interarchive
+  pthread_create(&thread_valid, NULL, traiterValidation, NULL);
+  pthread_create(&thread_inter, NULL, traiterInterArchive, NULL);
   
-
-  /*
-      traiter les terminaux
-    */
-
-  /*
-      traiter les serveurs de validation
-    */
-  // printf("\nTraitement du serveur Validation...\n");
-  // while ((ligne = litLigne(fdvToa)) != NULL)
-  // {
-  //   printf("%s", ligne);
-  //   decoupe(ligne, nTest, type, valeur);
-  //   fd = atoi(trouverEntree(memoire, nTest));
-  //   ecritLigne(fd, ligne);
-  // }
-
-  /*
-      traiter les serveurs InterArchive
-    */
-
-
-  traiterTerminal(0);
-  traiterTerminal(1);
-  traiterTerminal(2);
-
-  traiterValidation();
-  traiterInterArchive();
+  pthread_join(thread_valid, NULL);
+  pthread_join(thread_inter, NULL);
 
   return 0;
 }
 
+/********************************************************/
+/*******   Fonctions à éxecuter via les threads   *******/
+/********************************************************/
+
 /*
 * recevoir les demandes des treminaux
 */
-void traiterTerminal(int term)
+void *traiterTerminal(void *arg)
 {
-  char *ligne/*, *mes*/;
+  char *ligne;
   char nTest[17], type[8], valeur[10];
   tra_t e;
   char code[5];
+  int term = (intptr_t) arg;
 
   while (1)
   {
@@ -97,58 +99,65 @@ void traiterTerminal(int term)
       break;
     }
 
-    printf("\nTraitement du Terminal %d...\n", term);
+    // printf("\nTraitement du Terminal %d...\n", term);
 
-    printf("%s", ligne);
-    //mes = suppRetourChariot(ligne);
+    printf("[Terminal %d] %s", term, ligne);
     decoupe(ligne, nTest, type, valeur);
     strncpy(code, nTest, 4);
 
     sprintf(e.nTest, "%s", nTest);
     sprintf(e.fdesc, "%d", fdaTot[term]);
+    sem_wait(&vide);
+    sem_wait(&mutex);
     ajouterEntree(memoire, e);
-
+    // afficherMemoire(memoire, tailleMem);
+    sem_post(&mutex);
     if (strcmp(code, CCENTRE) == 0)
     {
       ecritLigne(fdaTov, ligne);
-      //ecritLigne(fdaTov, "\n");
     }
     else
     {
       ecritLigne(fdaToi, ligne);
-      //ecritLigne(fdaToi, "\n");
     }
   }
+  return (void *)0;
 }
 
 /*
 * recevoir les réponses du serveur de validation
 */
-void traiterValidation()
+void *traiterValidation()
 {
   char *ligne;
   char nTest[17], type[8], valeur[10];
   int fd;
 
-  printf("\nTraitement du serveur Validation...\n");
+  // printf("\nTraitement du serveur Validation...\n");
   while (1)
   {
     if((ligne = litLigne(fdvToa)) == NULL){
       break;
     }
-    printf("%s", ligne);
+    printf("[Validation] %s", ligne);
     decoupe(ligne, nTest, type, valeur);
+    sem_wait(&mutex);
     fd = atoi(trouverEntree(memoire, nTest));
     ecritLigne(fd, ligne);
+    supprimerEntree(memoire, nTest);
+    // afficherMemoire(memoire, tailleMem);
+    sem_post(&mutex);
+    sem_post(&vide);
   }
+  return (void *)0;
 }
 
 /*
 * recevoir les demandes et les répondes du serveur InterArchive
 */
-void traiterInterArchive()
+void *traiterInterArchive()
 {
-  char *ligne, *mes;
+  char *ligne;
   char nTest[17], type[8], valeur[10];
   tra_t e;
   int fd;
@@ -160,19 +169,29 @@ void traiterInterArchive()
     {
       break;
     }
-    printf("%s", ligne);
-    //mes = suppRetourChariot(ligne);
+    printf("[InterArchive] %s", ligne);
     decoupe(ligne, nTest, type, valeur);
-    if (strcmp(valeur, "Reponse") == 0)
+
+    if (strcmp(type, "Reponse") == 0)
     {
+      sem_wait(&mutex);
       fd = atoi(trouverEntree(memoire, nTest));
       ecritLigne(fd, ligne);
+      supprimerEntree(memoire, nTest);
+      // afficherMemoire(memoire, tailleMem);
+      sem_post(&mutex);
+      sem_post(&vide);
     }
   
     else{
       sprintf(e.nTest, "%s", nTest);
       sprintf(e.fdesc, "%d", fdaToi);
+      sem_wait(&vide);
+      sem_wait(&mutex);
       ajouterEntree(memoire, e);
+      // afficherMemoire(memoire, tailleMem);
+      sem_post(&mutex);
     }
   }
+  return (void *)0;
 }

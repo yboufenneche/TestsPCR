@@ -20,12 +20,12 @@ void ajouterEntree(tra_t * memoire, tra_t element){
 }
 
 // **** supprimer une entrée de la table de routage
-void supprimerEntree(tra_t * memoire, tra_t element){
+void supprimerEntree(tra_t * memoire, char * nTest){
     int i = 0;
     tra_t e;
     do{
         e = memoire[i];
-        if (strcmp(e.nTest, element.nTest) == 0){
+        if (strcmp(e.nTest, nTest) == 0){
             break;
         }
         i++;
@@ -47,4 +47,14 @@ char * trouverEntree(tra_t * memoire, char * nTest){
         i++;
     } while (1);
     return memoire[i].fdesc;
+}
+
+// **** afficher le contenu de la mémoire du serveur
+void afficherMemoire(tra_t * memoire, int taille){
+
+    for (int i = 0; i < taille; i++)
+    {
+        printf ("[%s] [%s]\n", (memoire+i)->nTest, (memoire+i)->fdesc);
+    }
+    
 }

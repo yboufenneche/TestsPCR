@@ -5,8 +5,9 @@ typedef struct entree_tra
 } tra_t;
 
 void ajouterEntree(tra_t * memoire, tra_t element);
-void supprimerEntree(tra_t * memoire, tra_t element);
+void supprimerEntree(tra_t * memoire, char * nTest);
 char * trouverEntree(tra_t * memoire, char * nTest);
+void afficherMemoire(tra_t * memoire, int taille);
 
 // tra_t * initMemoire(int n){
 // }

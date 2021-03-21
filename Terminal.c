@@ -10,7 +10,7 @@
 int main(int argc, char *argv[])
 {
 
-    int fdr, fdw, fdl, decoupeOk;
+    int id, fdr, fdw, fdl, decoupeOk;
     int nLigne, nbrLignes, validation;
     char *nTest, type[255], valeur[255];
     char *requete, *reponse;
@@ -19,9 +19,10 @@ int main(int argc, char *argv[])
 
     // nombre de lignes (tests) dans le fichier "tests.lst"
     nbrLignes = atoi(argv[3]);
+    id =atoi(argv[4]);
 
     // récupérer les descripteurs de fichiers fournis à travers la ligne de commandes
-    if (argc == 4)
+    if (argc == 5)
     {
         fdr = atoi(argv[1]) /*open(argv[1], O_RDONLY)*/;
         fdw = atoi(argv[2]) /*open(argv[2], O_WRONLY)*/;
@@ -29,6 +30,8 @@ int main(int argc, char *argv[])
         fprintf(stderr, "fdr = %d\n", fdr);
         fprintf(stderr, "fdw = %d\n", fdw);
     }
+
+    printf("Ici, un terminal %d...\n", id);
 
     /* récupérer un numéro de test aléatoire.
        On commence par génerer un numéro de ligne alétoire,

@@ -17,14 +17,16 @@ int main(int argc, char **argv)
     time_t now;
     test_t test;
 
+    fprintf(stderr, "Ici, Validation...\n");
+
     // récupérer les descripteurs de fichiers fournis à travers la ligne de commandes
     if (argc == 3)
     {
         fdr = atoi(argv[1]);
         fdw = atoi(argv[2]);
 
-        fprintf(stderr, "fdr = %d\n", fdr);
-        fprintf(stderr, "fdw = %d\n", fdw);
+        // fprintf(stderr, "fdr = %d\n", fdr);
+        // fprintf(stderr, "fdw = %d\n", fdw);
     }
 
     // redirection

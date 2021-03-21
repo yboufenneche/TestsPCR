@@ -10,12 +10,20 @@
 #include "alea.h"
 #include "message.h"
 #include "memoire.h"
+#include "Aquisition.h"
 
 #define CCENTRE "0001"
+// #define R 0;
+// #define W 1;
 
 int nbTerm, tailleMem;
 tra_t *memoire;
-int *fdtToa, *fdaTot, fdaTov, fdvToa, fdiToa, fdaToi;
+
+liaison_t *liaisonsTerm;
+liaison_t liaisonValid;
+liaison_t liaisonInter;
+
+// int *fdtToa, *fdaTot, fdaTov, fdvToa, fdiToa, fdaToi;
 
 sem_t vide, mutex;
 
@@ -32,22 +40,63 @@ int main(int argc, char **argv)
 
   nbTerm = atoi(argv[1]);
   tailleMem = atoi(argv[2]);
-  fdtToa = malloc(nbTerm * sizeof(int));
-  fdaTot = malloc(nbTerm * sizeof(int));
-  memoire = (tra_t*) malloc(tailleMem * sizeof(tra_t));
+  // fdtToa = malloc(nbTerm * sizeof(int));
+  // fdaTot = malloc(nbTerm * sizeof(int));
+  memoire = (tra_t *)malloc(tailleMem * sizeof(tra_t));
+  liaisonsTerm = (liaison_t *)malloc(nbTerm * sizeof(liaison_t));
 
-  fdtToa[0] = open("t1Toa.txt", O_RDONLY);
-  fdtToa[1] = open("t2Toa.txt", O_RDONLY);
-  fdtToa[2] = open("t3Toa.txt", O_RDONLY);
+  for (int i = 0; i < nbTerm; i++)
+  {
+    pipe((liaisonsTerm + i)->pipeReceive);
+    pipe((liaisonsTerm + i)->pipeSend);
+  }
 
-  fdaTot[0] = open("aTot1.txt", O_WRONLY);
-  fdaTot[1] = open("aTot2.txt", O_WRONLY);
-  fdaTot[2] = open("aTot3.txt", O_WRONLY);
+  pipe(liaisonValid.pipeSend);
+  pipe(liaisonValid.pipeReceive);
 
-  fdvToa = open("vToa.txt", O_RDONLY);
-  fdaTov = open("aTov.txt", O_WRONLY);
-  fdiToa = open("iToa.txt", O_RDONLY);
-  fdaToi = open("aToi.txt", O_WRONLY);
+  pipe(liaisonInter.pipeSend);
+  pipe(liaisonInter.pipeReceive);
+
+  pid_t terminal;
+  char t1[5], t2[5];
+
+  for (int i = 0; i < nbTerm; i++)
+  {
+    switch (terminal = fork())
+    {
+    case -1:
+      /* le fork a échoué */
+      perror("fork");
+      exit(-1);
+    case 0:
+      // close((liaisonsTerm + i)->pipeReceive[1]);
+      // close((liaisonsTerm + i)->pipeSend[0]);
+      sprintf(t1, "%d", (liaisonsTerm + i)->pipeSend[0]);
+      sprintf(t2, "%d", (liaisonsTerm + i)->pipeReceive[1]);
+      execlp("xterm -e Terminal","Terminal", t1, t2, "20", "1", NULL);
+    //default:
+      // close((liaisonsTerm + i)->pipeReceive[0]);
+      // close((liaisonsTerm + i)->pipeSend[1]);
+    }
+  }
+
+  pid_t validation;
+  switch (validation = fork())
+  {
+  case -1:
+    /* le fork a échoué */
+    perror("fork");
+    exit(-1);
+  case 0:
+    close(liaisonValid.pipeReceive[1]);
+    close(liaisonValid.pipeSend[0]);
+    sprintf(t1, "%d", liaisonValid.pipeReceive[0]);
+    sprintf(t2, "%d", liaisonValid.pipeReceive[1]);
+    execlp("./Validation","Validation", t1, t2, NULL);
+  default:
+    close(liaisonValid.pipeReceive[0]);
+    close(liaisonValid.pipeSend[1]);
+  }
 
   sem_init(&mutex, 0, 1);
   sem_init(&vide, 0, tailleMem);
@@ -59,7 +108,7 @@ int main(int argc, char **argv)
   // threads Terminaux
   for (int i = 0; i < nbTerm; i++)
   {
-    pthread_create(&thread_term[i], NULL, traiterTerminal, (void *) (intptr_t) i);
+    pthread_create(&thread_term[i], NULL, traiterTerminal, (void *)(intptr_t)i);
   }
 
   for (int i = 0; i < nbTerm; i++)
@@ -70,7 +119,7 @@ int main(int argc, char **argv)
   // thread Validation et thread Interarchive
   pthread_create(&thread_valid, NULL, traiterValidation, NULL);
   pthread_create(&thread_inter, NULL, traiterInterArchive, NULL);
-  
+
   pthread_join(thread_valid, NULL);
   pthread_join(thread_inter, NULL);
 
@@ -90,14 +139,11 @@ void *traiterTerminal(void *arg)
   char nTest[17], type[8], valeur[10];
   tra_t e;
   char code[5];
-  int term = (intptr_t) arg;
+  int term = (intptr_t)arg;
 
   while (1)
   {
-    if ((ligne = litLigne(fdtToa[term])) == NULL)
-    {
-      break;
-    }
+    ligne = litLigne((liaisonsTerm + term)->pipeReceive[0]);
 
     // printf("\nTraitement du Terminal %d...\n", term);
 
@@ -106,7 +152,7 @@ void *traiterTerminal(void *arg)
     strncpy(code, nTest, 4);
 
     sprintf(e.nTest, "%s", nTest);
-    sprintf(e.fdesc, "%d", fdaTot[term]);
+    e.fdesc = (liaisonsTerm + term)->pipeSend[1];
     sem_wait(&vide);
     sem_wait(&mutex);
     ajouterEntree(memoire, e);
@@ -114,11 +160,11 @@ void *traiterTerminal(void *arg)
     sem_post(&mutex);
     if (strcmp(code, CCENTRE) == 0)
     {
-      ecritLigne(fdaTov, ligne);
+      ecritLigne(liaisonValid.pipeSend[1], ligne);
     }
     else
     {
-      ecritLigne(fdaToi, ligne);
+      ecritLigne(liaisonInter.pipeSend[1], ligne);
     }
   }
   return (void *)0;
@@ -131,19 +177,17 @@ void *traiterValidation()
 {
   char *ligne;
   char nTest[17], type[8], valeur[10];
-  int fd;
+  int fdesc;
 
   // printf("\nTraitement du serveur Validation...\n");
   while (1)
   {
-    if((ligne = litLigne(fdvToa)) == NULL){
-      break;
-    }
+    ligne = litLigne(liaisonValid.pipeReceive[1]);
     printf("[Validation] %s", ligne);
     decoupe(ligne, nTest, type, valeur);
     sem_wait(&mutex);
-    fd = atoi(trouverEntree(memoire, nTest));
-    ecritLigne(fd, ligne);
+    fdesc = trouverEntree(memoire, nTest);
+    ecritLigne(fdesc, ligne);
     supprimerEntree(memoire, nTest);
     // afficherMemoire(memoire, tailleMem);
     sem_post(&mutex);
@@ -160,32 +204,30 @@ void *traiterInterArchive()
   char *ligne;
   char nTest[17], type[8], valeur[10];
   tra_t e;
-  int fd;
+  int fdesc;
 
   printf("\nTraitement du serveur InterArchive...\n");
   while (1)
   {
-    if ((ligne = litLigne(fdiToa)) == NULL)
-    {
-      break;
-    }
+    ligne = litLigne(liaisonInter.pipeReceive[0]);
     printf("[InterArchive] %s", ligne);
     decoupe(ligne, nTest, type, valeur);
 
     if (strcmp(type, "Reponse") == 0)
     {
       sem_wait(&mutex);
-      fd = atoi(trouverEntree(memoire, nTest));
-      ecritLigne(fd, ligne);
+      fdesc = trouverEntree(memoire, nTest);
+      ecritLigne(fdesc, ligne);
       supprimerEntree(memoire, nTest);
       // afficherMemoire(memoire, tailleMem);
       sem_post(&mutex);
       sem_post(&vide);
     }
-  
-    else{
+
+    else
+    {
       sprintf(e.nTest, "%s", nTest);
-      sprintf(e.fdesc, "%d", fdaToi);
+      e.fdesc = liaisonInter.pipeSend[1];
       sem_wait(&vide);
       sem_wait(&mutex);
       ajouterEntree(memoire, e);

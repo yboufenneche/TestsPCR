@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "fdw = %d\n", fdw);
     }
 
-    printf("Ici, un terminal %d...\n", id);
+    fprintf(stderr, "Ici, un terminal %d...\n", id);
 
     /* récupérer un numéro de test aléatoire.
        On commence par génerer un numéro de ligne alétoire,

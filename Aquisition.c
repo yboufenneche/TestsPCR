@@ -60,6 +60,7 @@ int main(int argc, char **argv)
   pid_t terminal;
   char t1[5], t2[5], nterm[5];
 
+  // création des processus terminaux avec fork et execlp
   for (int i = 0; i < nbTerm; i++)
   {
     switch (terminal = fork())
@@ -95,14 +96,14 @@ int main(int argc, char **argv)
     close(liaisonValid.pipeReceive[1]);
     close(liaisonValid.pipeSend[0]);
     sprintf(t1, "%d", liaisonValid.pipeReceive[0]);
-    sprintf(t2, "%d", liaisonValid.pipeReceive[1]);
+    sprintf(t2, "%d", liaisonValid.pipeSend[1]);
     printf("Rec. Validation: t1 = %s, t2 = %s\n", t1, t2);
     // execlp("./Validation", "./Validation", t1, t2, NULL);
     execlp("/usr/bin/xterm", "xterm", "-e", "./Validation", t1, t2, NULL);
     break;
   default:
-    close(liaisonValid.pipeReceive[0]);
-    close(liaisonValid.pipeSend[1]);
+    // close(liaisonValid.pipeReceive[0]);
+    // close(liaisonValid.pipeSend[1]);
     break;
   }
 
@@ -154,8 +155,7 @@ void *traiterTerminal(void *arg)
     ligne = litLigne((liaisonsTerm + term)->pipeReceive[0]);
 
     // printf("\nTraitement du Terminal %d...\n", term);
-
-    printf("[Terminal %d] %s", term, ligne);
+    printf("Aquisition, demande reçue [Terminal %d]: %s", term, ligne);
     decoupe(ligne, nTest, type, valeur);
     strncpy(code, nTest, 4);
 
@@ -164,7 +164,7 @@ void *traiterTerminal(void *arg)
     sem_wait(&vide);
     sem_wait(&mutex);
     ajouterEntree(memoire, e);
-    // afficherMemoire(memoire, tailleMem);
+    afficherMemoire(memoire, tailleMem);
     sem_post(&mutex);
     if (strcmp(code, CCENTRE) == 0)
     {
@@ -190,8 +190,8 @@ void *traiterValidation()
   // printf("\nTraitement du serveur Validation...\n");
   while (1)
   {
-    ligne = litLigne(liaisonValid.pipeReceive[1]);
-    printf("[Validation] %s", ligne);
+    ligne = litLigne(liaisonValid.pipeReceive[0]);
+    printf("[Aquisition, réponse de [Validation] %s", ligne);
     decoupe(ligne, nTest, type, valeur);
     sem_wait(&mutex);
     fdesc = trouverEntree(memoire, nTest);
@@ -218,7 +218,7 @@ void *traiterInterArchive()
   while (1)
   {
     ligne = litLigne(liaisonInter.pipeReceive[0]);
-    printf("[InterArchive] %s", ligne);
+    printf("Aquisition, message reçu [InterArchive]: %s", ligne);
     decoupe(ligne, nTest, type, valeur);
 
     if (strcmp(type, "Reponse") == 0)

@@ -25,8 +25,7 @@ int main(int argc, char **argv)
         fdr = atoi(argv[1]);
         fdw = atoi(argv[2]);
 
-        // fprintf(stderr, "fdr = %d\n", fdr);
-        // fprintf(stderr, "fdw = %d\n", fdw);
+        fprintf(stderr, "Validation: fdr = %d, fdw = %d\n", fdr, fdw);
     }
 
     // redirection

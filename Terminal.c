@@ -27,8 +27,7 @@ int main(int argc, char *argv[])
         fdr = atoi(argv[1]) /*open(argv[1], O_RDONLY)*/;
         fdw = atoi(argv[2]) /*open(argv[2], O_WRONLY)*/;
 
-        fprintf(stderr, "fdr = %d\n", fdr);
-        fprintf(stderr, "fdw = %d\n", fdw);
+        fprintf(stderr, "Validation: fdr = %d, fdw = %d\n", fdr, fdw);
     }
 
     fprintf(stderr, "Ici, un terminal %d...\n", id);
@@ -59,7 +58,7 @@ int main(int argc, char *argv[])
     requete = message(nTest, "Demande", valeur);
 
     // redirection
-    if(dup2(fdw, 1) < 0){
+    if(dup2(1, fdw) < 0){
         perror("Impossible de dupliquer le descripteur du fichier");
         exit(EXIT_FAILURE);
     }
@@ -72,7 +71,7 @@ int main(int argc, char *argv[])
     }
 
     // redirection
-    if(dup2(fdr, 0) < 0){
+    if(dup2(0, fdr) < 0){
         perror("Impossible de dupliquer le descripteur du fichier.\n");
         exit(EXIT_FAILURE);
     }

@@ -58,7 +58,7 @@ int main(int argc, char **argv)
   pipe(liaisonInter.pipeReceive);
 
   pid_t terminal;
-  char t1[5], t2[5];
+  char t1[5], t2[5], nterm[5];
 
   for (int i = 0; i < nbTerm; i++)
   {
@@ -73,10 +73,14 @@ int main(int argc, char **argv)
       // close((liaisonsTerm + i)->pipeSend[0]);
       sprintf(t1, "%d", (liaisonsTerm + i)->pipeSend[0]);
       sprintf(t2, "%d", (liaisonsTerm + i)->pipeReceive[1]);
-      execlp("xterm -e Terminal","Terminal", t1, t2, "20", "1", NULL);
-    //default:
+      sprintf(nterm, "%d", i);
+      printf("Rec. Terminal %d: t1 = %s, t2 = %s\n", i, t1, t2);
+      execlp("/usr/bin/xterm", "xterm", "-e", "./Terminal", t1, t2, "20", nterm, NULL);
+      break;
+    default:
       // close((liaisonsTerm + i)->pipeReceive[0]);
       // close((liaisonsTerm + i)->pipeSend[1]);
+      break;
     }
   }
 
@@ -92,10 +96,14 @@ int main(int argc, char **argv)
     close(liaisonValid.pipeSend[0]);
     sprintf(t1, "%d", liaisonValid.pipeReceive[0]);
     sprintf(t2, "%d", liaisonValid.pipeReceive[1]);
-    execlp("./Validation","Validation", t1, t2, NULL);
+    printf("Rec. Validation: t1 = %s, t2 = %s\n", t1, t2);
+    // execlp("./Validation", "./Validation", t1, t2, NULL);
+    execlp("/usr/bin/xterm", "xterm", "-e", "./Validation", t1, t2, NULL);
+    break;
   default:
     close(liaisonValid.pipeReceive[0]);
     close(liaisonValid.pipeSend[1]);
+    break;
   }
 
   sem_init(&mutex, 0, 1);

@@ -49,14 +49,24 @@ int main(int argc, char **argv)
   {
     pipe((liaisonsTerm + i)->pipeReceive);
     pipe((liaisonsTerm + i)->pipeSend);
+    printf("Terminal %d\n", i);
+    printf("pipeReceive: [%d, %d]\n", (liaisonsTerm + i)->pipeReceive[0], (liaisonsTerm + i)->pipeReceive[1]);
+    printf("pipeSend:    [%d, %d]\n", (liaisonsTerm + i)->pipeSend[0], (liaisonsTerm + i)->pipeSend[1]);
   }
 
   pipe(liaisonValid.pipeSend);
   pipe(liaisonValid.pipeReceive);
+  printf("Validation\n");
+  printf("pipeReceive: [%d, %d]\n", liaisonValid.pipeReceive[0], liaisonValid.pipeReceive[1]);
+  printf("pipeSend:    [%d, %d]\n", liaisonValid.pipeSend[0], liaisonValid.pipeSend[1]);
+  
 
   pipe(liaisonInter.pipeSend);
   pipe(liaisonInter.pipeReceive);
-
+  printf("InterArchive\n");
+  printf("pipeReceive: [%d, %d]\n", liaisonInter.pipeReceive[0], liaisonInter.pipeReceive[1]);
+  printf("pipeSend:    [%d, %d]\n", liaisonInter.pipeSend[0], liaisonInter.pipeSend[1]);
+  
   pid_t terminal;
   char t1[5], t2[5], nterm[5];
 
@@ -93,10 +103,10 @@ int main(int argc, char **argv)
     perror("fork");
     exit(-1);
   case 0:
-    close(liaisonValid.pipeReceive[1]);
-    close(liaisonValid.pipeSend[0]);
-    sprintf(t1, "%d", liaisonValid.pipeReceive[0]);
-    sprintf(t2, "%d", liaisonValid.pipeSend[1]);
+    // close(liaisonValid.pipeReceive[1]);
+    // close(liaisonValid.pipeSend[0]);
+    sprintf(t1, "%d", liaisonValid.pipeSend[0]);
+    sprintf(t2, "%d", liaisonValid.pipeReceive[1]);
     printf("Rec. Validation: t1 = %s, t2 = %s\n", t1, t2);
     // execlp("./Validation", "./Validation", t1, t2, NULL);
     execlp("/usr/bin/xterm", "xterm", "-e", "./Validation", t1, t2, NULL);
@@ -120,14 +130,14 @@ int main(int argc, char **argv)
     pthread_create(&thread_term[i], NULL, traiterTerminal, (void *)(intptr_t)i);
   }
 
+  // thread Validation et thread Interarchive
+  pthread_create(&thread_valid, NULL, traiterValidation, NULL);
+  pthread_create(&thread_inter, NULL, traiterInterArchive, NULL);
+
   for (int i = 0; i < nbTerm; i++)
   {
     pthread_join(thread_term[i], NULL);
   }
-
-  // thread Validation et thread Interarchive
-  pthread_create(&thread_valid, NULL, traiterValidation, NULL);
-  pthread_create(&thread_inter, NULL, traiterInterArchive, NULL);
 
   pthread_join(thread_valid, NULL);
   pthread_join(thread_inter, NULL);
@@ -161,6 +171,7 @@ void *traiterTerminal(void *arg)
 
     sprintf(e.nTest, "%s", nTest);
     e.fdesc = (liaisonsTerm + term)->pipeSend[1];
+    // printf("%d\n", e.fdesc);
     sem_wait(&vide);
     sem_wait(&mutex);
     ajouterEntree(memoire, e);
@@ -190,11 +201,13 @@ void *traiterValidation()
   // printf("\nTraitement du serveur Validation...\n");
   while (1)
   {
+    printf("......");
     ligne = litLigne(liaisonValid.pipeReceive[0]);
     printf("[Aquisition, réponse de [Validation] %s", ligne);
     decoupe(ligne, nTest, type, valeur);
     sem_wait(&mutex);
     fdesc = trouverEntree(memoire, nTest);
+    printf("%d\n", fdesc);
     ecritLigne(fdesc, ligne);
     supprimerEntree(memoire, nTest);
     // afficherMemoire(memoire, tailleMem);

@@ -27,10 +27,8 @@ int main(int argc, char *argv[])
         fdr = atoi(argv[1]) /*open(argv[1], O_RDONLY)*/;
         fdw = atoi(argv[2]) /*open(argv[2], O_WRONLY)*/;
 
-        fprintf(stderr, "Terminal: fdr = %d, fdw = %d\n", fdr, fdw);
+        fprintf(stderr, "Ici, Terminal %d: [%d, %d]\n", id, fdr, fdw);
     }
-
-    fprintf(stderr, "Ici, un terminal %d...\n", id);
 
     /* récupérer un numéro de test aléatoire.
        On commence par génerer un numéro de ligne alétoire,
@@ -72,7 +70,7 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
 
-        fprintf(stderr, "Demande envoyée [fd:%d]: %s\n", fdw, requete);
+        fprintf(stderr, "Terminal, %d: Demande envoyée [fd = %d]: %s\n", id, fdw, requete);
 
         // redirection
         // if(dup2(0, fdr) < 0){

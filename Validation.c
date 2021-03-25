@@ -17,15 +17,13 @@ int main(int argc, char **argv)
     time_t now;
     test_t test;
 
-    fprintf(stderr, "Ici, Validation...\n");
-
     // récupérer les descripteurs de fichiers fournis à travers la ligne de commandes
     if (argc == 3)
     {
         fdr = atoi(argv[1]);
         fdw = atoi(argv[2]);
 
-        fprintf(stderr, "Validation: fdr = %d, fdw = %d\n", fdr, fdw);
+        fprintf(stderr, "Ici, Validation: [%d, %d]\n", fdr, fdw);
     }
 
     // redirection
@@ -35,6 +33,7 @@ int main(int argc, char **argv)
     // }
     while (1)
     {
+        fprintf(stderr, "Attente d'une demande de validation...\n");
         // récupérer la demande de validation (le message)
         msg = litLigne(fdr);
 

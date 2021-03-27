@@ -12,11 +12,11 @@
 #include "memoire.h"
 #include "Aquisition.h"
 
-#define CCENTRE "0001"
 // #define R 0;
 // #define W 1;
 
-int nbTerm, tailleMem;
+char *code_centre, *nom_centre, *fichier_resultats;
+int nbTerm, tailleMem, fd_res;
 tra_t *memoire;
 
 liaison_t *liaisonsTerm;
@@ -38,12 +38,15 @@ void *traiterInterArchive();
 int main(int argc, char **argv)
 {
 
-  nbTerm = atoi(argv[1]);
-  tailleMem = atoi(argv[2]);
-  // fdtToa = malloc(nbTerm * sizeof(int));
-  // fdaTot = malloc(nbTerm * sizeof(int));
+  nom_centre = argv[1];
+  code_centre = argv[2];
+  fichier_resultats = argv[3];
+  nbTerm = atoi(argv[4]);
+  tailleMem = atoi(argv[5]);
   memoire = (tra_t *)malloc(tailleMem * sizeof(tra_t));
   liaisonsTerm = (liaison_t *)malloc(nbTerm * sizeof(liaison_t));
+  // fd_res = open(fichier_resultats, O_RDONLY);
+  // printf("fd_res: %d\n", fd_res);
 
   for (int i = 0; i < nbTerm; i++)
   {
@@ -68,7 +71,7 @@ int main(int argc, char **argv)
   printf("pipeSend:    [%d, %d]\n", liaisonInter.pipeSend[0], liaisonInter.pipeSend[1]);
   
   pid_t terminal;
-  char t1[5], t2[5], nterm[5];
+  char fd1[5], fd2[5]/*, fd3[5]*/, nterm[5];
 
   // création des processus terminaux avec fork et execlp
   for (int i = 0; i < nbTerm; i++)
@@ -82,11 +85,11 @@ int main(int argc, char **argv)
     case 0:
       // close((liaisonsTerm + i)->pipeReceive[1]);
       // close((liaisonsTerm + i)->pipeSend[0]);
-      sprintf(t1, "%d", (liaisonsTerm + i)->pipeSend[0]);
-      sprintf(t2, "%d", (liaisonsTerm + i)->pipeReceive[1]);
+      sprintf(fd1, "%d", (liaisonsTerm + i)->pipeSend[0]);
+      sprintf(fd2, "%d", (liaisonsTerm + i)->pipeReceive[1]);
       sprintf(nterm, "%d", i);
-      printf("Rec. Terminal %d: t1 = %s, t2 = %s\n", i, t1, t2);
-      execlp("/usr/bin/xterm", "xterm", "-e", "./Terminal", t1, t2, "20", nterm, NULL);
+      printf("Rec. Terminal %d: fd1 = %s, fd2 = %s\n", i, fd1, fd2);
+      execlp("/usr/bin/xterm", "xterm", "-e", "./Terminal", fd1, fd2, "20", nterm, NULL);
       break;
     default:
       // close((liaisonsTerm + i)->pipeReceive[0]);
@@ -105,11 +108,12 @@ int main(int argc, char **argv)
   case 0:
     // close(liaisonValid.pipeReceive[1]);
     // close(liaisonValid.pipeSend[0]);
-    sprintf(t1, "%d", liaisonValid.pipeSend[0]);
-    sprintf(t2, "%d", liaisonValid.pipeReceive[1]);
-    printf("Rec. Validation: t1 = %s, t2 = %s\n", t1, t2);
-    // execlp("./Validation", "./Validation", t1, t2, NULL);
-    execlp("/usr/bin/xterm", "xterm", "-e", "./Validation", t1, t2, NULL);
+    sprintf(fd1, "%d", liaisonValid.pipeSend[0]);
+    sprintf(fd2, "%d", liaisonValid.pipeReceive[1]);
+    // sprintf(fd3, "%d", fd_res);
+    printf("Rec. Validation: fd1 = %s, fd2 = %s, fichier res = %s\n", fd1, fd2, fichier_resultats);
+    // execlp("./Validation", "./Validation", fd1, fd2, fd3, NULL);
+    execlp("/usr/bin/xterm", "xterm", "-e", "./Validation", fd1, fd2, fichier_resultats, NULL);
     break;
   default:
     // close(liaisonValid.pipeReceive[0]);
@@ -165,7 +169,7 @@ void *traiterTerminal(void *arg)
     ligne = litLigne((liaisonsTerm + term)->pipeReceive[0]);
 
     // printf("\nTraitement du Terminal %d...\n", term);
-    printf("Aquisition, demande reçue [Terminal %d]: %s", term, ligne);
+    printf("[Aquisition], demande reçue [Terminal %d]: %s", term, ligne);
     decoupe(ligne, nTest, type, valeur);
     strncpy(code, nTest, 4);
 
@@ -177,7 +181,7 @@ void *traiterTerminal(void *arg)
     ajouterEntree(memoire, e);
     afficherMemoire(memoire, tailleMem);
     sem_post(&mutex);
-    if (strcmp(code, CCENTRE) == 0)
+    if (strcmp(code, code_centre) == 0)
     {
       ecritLigne(liaisonValid.pipeSend[1], ligne);
     }
@@ -201,9 +205,8 @@ void *traiterValidation()
   // printf("\nTraitement du serveur Validation...\n");
   while (1)
   {
-    printf("......");
     ligne = litLigne(liaisonValid.pipeReceive[0]);
-    printf("[Aquisition, réponse de [Validation] %s", ligne);
+    printf("[Aquisition], réponse de [Validation] %s", ligne);
     decoupe(ligne, nTest, type, valeur);
     sem_wait(&mutex);
     fdesc = trouverEntree(memoire, nTest);
@@ -231,7 +234,7 @@ void *traiterInterArchive()
   while (1)
   {
     ligne = litLigne(liaisonInter.pipeReceive[0]);
-    printf("Aquisition, message reçu [InterArchive]: %s", ligne);
+    printf("[Aquisition], message reçu [InterArchive]: %s", ligne);
     decoupe(ligne, nTest, type, valeur);
 
     if (strcmp(type, "Reponse") == 0)

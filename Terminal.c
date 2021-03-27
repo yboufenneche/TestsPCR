@@ -35,9 +35,9 @@ int main(int argc, char *argv[])
        après on récupère le numéro de test correspondant à
        cette ligne dans le fichier "tests.lst"
     */
+   aleainit();
     while (1)
     {
-        aleainit();
         nLigne = alea(1, nbrLignes);
         fdl = open("tests.lst", O_RDONLY);
         i = 1;
@@ -52,7 +52,8 @@ int main(int argc, char *argv[])
         close(fdl);
 
         //générer une durée de validité aléatoire entre 1000 et 2000 secondes
-        sprintf(valeur, "%d", alea(1000, 2000));
+        // aleainit();
+        sprintf(valeur, "%d", alea(172800, 259200));
 
         // générer une demande
         requete = message(nTest, "Demande", valeur);
@@ -104,5 +105,9 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Erreur de découpage: %s \n", reponse);
         }
     }
+    while (1)
+    {
+    }
+    
     return 0;
 }

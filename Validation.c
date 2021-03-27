@@ -11,19 +11,20 @@
 
 int main(int argc, char **argv)
 {
-    int fdr, fdw, decoupeOk;
+    int fdr, fdw, fd_res, decoupeOk;
     char nTest[17], type[8], valeur[10];
-    char *msg, *rep;
+    char *msg, *rep, *fich_res;
     time_t now;
     test_t test;
 
     // récupérer les descripteurs de fichiers fournis à travers la ligne de commandes
-    if (argc == 3)
+    if (argc == 4)
     {
         fdr = atoi(argv[1]);
         fdw = atoi(argv[2]);
+        fich_res = argv[3];
 
-        fprintf(stderr, "Ici, Validation: [%d, %d]\n", fdr, fdw);
+        fprintf(stderr, "Ici, Validation: [%d, %d, %s]\n", fdr, fdw, fich_res);
     }
 
     // redirection
@@ -46,10 +47,10 @@ int main(int argc, char **argv)
             fprintf(stderr, "Erreur de découpage du message: %s\n", msg);
             exit(EXIT_FAILURE);
         }
-
+        
         // chercher le test dans l'annuaire "resultats.an"
-        int fd = open("resultats.ar", O_RDONLY);
-        test = trouverTest(fd, nTest);
+        fd_res = open(fich_res, O_RDONLY);
+        test = trouverTest(fd_res, nTest);
         fprintf(stderr, "Test trouvé: [%s] [%s] [%s]\n", test.nTest, test.date, test.res);
 
         // convertir la date du test du chaîne à long

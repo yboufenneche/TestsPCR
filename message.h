@@ -24,4 +24,9 @@ int decoupe(char *message,  /* Source a découper */
  */
 char* message(char *nTest, char *type, char * valeur);
 
+int decoupe2(char *ligne,  /* Ligne a découper */
+	    char *nomCentre,   /* Nom du centre */
+	    char *codeCentre  /* Code du centre */
+	    );
+
 #endif // _MESSAGEH_

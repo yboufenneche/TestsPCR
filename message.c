@@ -22,17 +22,39 @@
  *     Les variables nTest, type et valeur doivent 
  * être allouées avant l'appel à decoupe
  */
-int decoupe(char *message,  /* Source a découper */
-	    char *nTest,          /* no du test PCR concerne */
-	    char *type,           /* Type du message */
-	    char *valeur          /* Valeur associée au message */
-	    )
+int decoupe(char *message, /* Source a découper */
+            char *nTest,   /* no du test PCR concerne */
+            char *type,    /* Type du message */
+            char *valeur   /* Valeur associée au message */
+)
 {
-  int nb=sscanf(message, "|%[^|]|%[^|]|%[^|]|\n", nTest, type, valeur);
+  int nb = sscanf(message, "|%[^|]|%[^|]|%[^|]|\n", nTest, type, valeur);
   if (nb == 3)
     return 1;
-  else  {
+  else
+  {
     errno = EINVAL;
+    return 0;
+  }
+}
+
+/*
+*
+*/
+
+int decoupe2(char *ligne,     /* Ligne a découper */
+             char *nom,       /* Nom du centre */
+             char *code       /* Code du centre */
+)
+{
+  int nb = sscanf(ligne, "%s %s\n", nom, code);
+  if (nb == 2){
+    return 1;
+  }
+  else
+  {
+    printf("Erreur de découpage!");
+    printf("%s", ligne);
     return 0;
   }
 }
@@ -43,14 +65,14 @@ int decoupe(char *message,  /* Source a découper */
  * a partir des arguments
  * Le message est alloué dans la fonction
  */
-char* message(char *nTest, char *type, char * valeur)
+char *message(char *nTest, char *type, char *valeur)
 {
   int longueur = strlen(nTest) + strlen(type) + strlen(valeur) + 1 + 5 + 1;
-  char *mess = calloc(longueur,sizeof(char));
+  char *mess = calloc(longueur, sizeof(char));
 
   if (mess == NULL)
     return NULL;
-  
+
   sprintf(mess, "|%s|%s|%s|\n", nTest, type, valeur);
 
   return mess;

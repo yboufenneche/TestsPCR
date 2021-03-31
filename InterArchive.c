@@ -77,28 +77,29 @@ int main(int argc, char **argv)
     }
 
     pid_t aquisition;
-    char fd1[5], fd2[5] /*, fd3[5]*/, nAqui[5];
+    // char fd1[5], fd2[5] /*, fd3[5]*/, nAqui[5];
 
-    // // création des processus InterArchive avec fork et execlp
-    // for (int i = 0; i < nbCentres; i++)
-    // {
-    //     switch (aquisition = fork())
-    //     {
-    //     case -1:
-    //         /* le fork a échoué */
-    //         perror("fork");
-    //         exit(-1);
-    //     case 0:
-    //         sprintf(fd1, "%d", (liaisonsAqui + i)->pipeSend[0]);
-    //         sprintf(fd2, "%d", (liaisonsAqui + i)->pipeReceive[1]);
-    //         sprintf(nterm, "%d", i);
-    //         printf("Rec. Aquisition %d: fd1 = %s, fd2 = %s\n", i, fd1, fd2);
-    //         execlp("/usr/bin/xterm", "xterm", "-e", "./Terminal", fd1, fd2, "20", nterm, NULL);
-    //         break;
-    //     default:
-    //         break;
-    //     }
-    // }
+    // création des processus Aquisition avec fork et execlp
+    for (int j = 0; j < 2; j++)
+    {
+        switch (aquisition = fork())
+        {
+        case -1:
+            /* le fork a échoué */
+            perror("fork");
+            exit(-1);
+        case 0:
+            // sprintf(fd1, "%d", (liaisonsAqui + i)->pipeSend[0]);
+            // sprintf(fd2, "%d", (liaisonsAqui + i)->pipeReceive[1]);
+            // sprintf(nterm, "%d", i);
+            // printf("Rec. Aquisition %d: fd1 = %s, fd2 = %s\n", i, fd1, fd2);
+            printf("[Aquisition %d]: %s %s %s %d %d\n", j, noms_centres[0], codes_centres[0], fichiers_res[0], nb_terms[0], tailleMem);
+            // execlp("/usr/bin/xterm", "xterm", "-e", "./Aquisition", *(noms_centres + i), *(codes_centres + i), *(fichiers_res + i), *(nb_terms + i), tailleMem, NULL);
+            break;
+        default:
+            break;
+        }
+    }
 
     // sem_init(&mutex, 0, 1);
     // sem_init(&vide, 0, tailleMem);

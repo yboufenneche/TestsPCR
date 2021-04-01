@@ -36,7 +36,7 @@ Aquisition.o: Aquisition.c Aquisition.h
 Aquisition: Aquisition.o message.o lectureEcriture.o memoire.o Aquisition.c
 	gcc -pthread -Wall Aquisition.o message.o lectureEcriture.o memoire.o -o Aquisition
 
-InterArchive.o: InterArchive.c
+InterArchive.o: InterArchive.c InterArchive.h
 	gcc -c -Wall InterArchive.c
 
 InterArchive: InterArchive.o message.o lectureEcriture.o memoire.o InterArchive.c

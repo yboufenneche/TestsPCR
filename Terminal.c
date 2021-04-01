@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     */
    aleainit();
    int j = 0;
-    while (j < 10000)
+    while (j < 3)
     {
         nLigne = alea(1, nbrLignes);
         fdl = open("tests.lst", O_RDONLY);
@@ -106,6 +106,10 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Erreur de découpage: %s \n", reponse);
         }
         j++;
+    }
+    while (1)
+    {
+        /* code */
     }
     
     return 0;

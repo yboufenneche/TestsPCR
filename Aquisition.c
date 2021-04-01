@@ -257,6 +257,7 @@ void *traiterInterArchive()
       ajouterEntree(memoire, e);
       // afficherMemoire(memoire, tailleMem);
       sem_post(&mutex);
+      ecritLigne(liaisonValid.pipeSend[1], ligne);
     }
   }
   return (void *)0;

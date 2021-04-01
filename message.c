@@ -53,7 +53,7 @@ int decoupe2(char *ligne,     /* Ligne a découper */
   }
   else
   {
-    printf("Erreur de découpage!");
+    printf("Erreur de découpage!\n");
     printf("%s", ligne);
     return 0;
   }

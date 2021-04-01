@@ -41,23 +41,23 @@ int main(int argc, char **argv)
 
     fd_conf = open(conf, O_RDONLY);
     annuaire = suppRetourChariot(litLigne(fd_conf));
-    printf("%s\n", annuaire);
+    printf("Annuaire des centres d'archivage: %s\n", annuaire);
     fd_an = open(annuaire, O_RDONLY);
-    a = malloc(sizeof(char *));
-    b = malloc(sizeof(char *));
+    
 
     char* fichier;
 
     for (int i = 0; i < nbCentres; i++)
     {
+        a = malloc(sizeof(char *));
+        b = malloc(sizeof(char *));
         ligne = litLigne(fd_an);
         fichier = suppRetourChariot(litLigne(fd_conf));
         decoupe2(ligne, a, b);
         *(noms_centres + i) = a;
         *(codes_centres + i) = b;
         *(fichiers_res + i) = fichier;
-        printf("%s --> %s\n", *(noms_centres + i), *(codes_centres + i));
-        printf("Fichier resultats [%d]: %s\n", i, *(fichiers_res + i));
+        // printf("%s %s %s\n", *(noms_centres + i), *(codes_centres + i), *(fichiers_res + i));
     }
     
 
@@ -68,20 +68,22 @@ int main(int argc, char **argv)
     {
         nbt = suppRetourChariot(litLigne(fd_conf));
         *(nb_terms + i) = atoi(nbt);
-        printf("nbt[%d]: %d\n", i, *(nb_terms + i));
+        // printf("%s %s %s %d\n", *(noms_centres + i), *(codes_centres + i), *(fichiers_res + i), *(nb_terms + i));
         pipe((liaisonsAqui + i)->pipeReceive);
         pipe((liaisonsAqui + i)->pipeSend);
-        printf("Aquisition %d\n", i);
-        printf("pipeReceive: [%d, %d]\n", (liaisonsAqui + i)->pipeReceive[0], (liaisonsAqui + i)->pipeReceive[1]);
-        printf("pipeSend:    [%d, %d]\n", (liaisonsAqui + i)->pipeSend[0], (liaisonsAqui + i)->pipeSend[1]);
+        // printf("Aquisition %d\n", i);
+        // printf("pipeReceive: [%d, %d]\n", (liaisonsAqui + i)->pipeReceive[0], (liaisonsAqui + i)->pipeReceive[1]);
+        // printf("pipeSend:    [%d, %d]\n", (liaisonsAqui + i)->pipeSend[0], (liaisonsAqui + i)->pipeSend[1]);
+
     }
 
     pid_t aquisition;
-    // char fd1[5], fd2[5] /*, fd3[5]*/, nAqui[5];
+    char nom[20], code[20], fic[20], nt[20], tm[4];/*, fd3[5], nAqui[5]*/;
 
     // création des processus Aquisition avec fork et execlp
-    for (int j = 0; j < 2; j++)
+    for (int i = 0; i < 2; i++)
     {
+        printf("%d\n", i);
         switch (aquisition = fork())
         {
         case -1:
@@ -89,33 +91,36 @@ int main(int argc, char **argv)
             perror("fork");
             exit(-1);
         case 0:
-            // sprintf(fd1, "%d", (liaisonsAqui + i)->pipeSend[0]);
-            // sprintf(fd2, "%d", (liaisonsAqui + i)->pipeReceive[1]);
-            // sprintf(nterm, "%d", i);
+            sprintf(nom, "%s", *(noms_centres + i));
+            sprintf(code, "%s", *(codes_centres + i));
+            sprintf(fic, "%s", *(fichiers_res + i));
+            sprintf(nt, "%d", *(nb_terms + i));
+            sprintf(tm, "%d", tailleMem);
             // printf("Rec. Aquisition %d: fd1 = %s, fd2 = %s\n", i, fd1, fd2);
-            printf("[Aquisition %d]: %s %s %s %d %d\n", j, noms_centres[0], codes_centres[0], fichiers_res[0], nb_terms[0], tailleMem);
-            // execlp("/usr/bin/xterm", "xterm", "-e", "./Aquisition", *(noms_centres + i), *(codes_centres + i), *(fichiers_res + i), *(nb_terms + i), tailleMem, NULL);
+
+            printf("[Rec. Aquisition %d]: %s %s %s %s %s\n", i, nom , code, fic , nt, tm);
+            execlp("/usr/bin/xterm", "xterm", "-e", "./Aquisition", nom, code, fic, nt, tm, NULL);
             break;
         default:
             break;
         }
     }
 
-    // sem_init(&mutex, 0, 1);
-    // sem_init(&vide, 0, tailleMem);
+    sem_init(&mutex, 0, 1);
+    sem_init(&vide, 0, tailleMem);
 
-    // pthread_t thread_aqui[nbCentres];
+    pthread_t thread_aqui[nbCentres];
 
-    // // threads Aquisitions
-    // for (int i = 0; i < nbCentres; i++)
-    // {
-    //     pthread_create(&thread_aqui[i], NULL, traiterAquisition, (void *)(intptr_t)i);
-    // }
+    // threads Aquisitions
+    for (int i = 0; i < nbCentres; i++)
+    {
+        pthread_create(&thread_aqui[i], NULL, traiterAquisition, (void *)(intptr_t) i);
+    }
 
-    // for (int i = 0; i < nbCentres; i++)
-    // {
-    //     pthread_join(thread_aqui[i], NULL);
-    // }
+    for (int i = 0; i < nbCentres; i++)
+    {
+        pthread_join(thread_aqui[i], NULL);
+    }
 
     return 0;
 }
@@ -127,39 +132,39 @@ int main(int argc, char **argv)
 /*
 * recevoir les messages des serveurs Aquisition
 */
-// void *traiterAquisition(void *arg)
-// {
-//     char *ligne;
-//     char nTest[17], type[8], valeur[10];
-//     tra_t e;
-//     char code[5];
-//     int term = (intptr_t)arg;
+void *traiterAquisition(void *arg)
+{
+    char *ligne;
+    char nTest[17], type[8], valeur[10];
+    tra_t e;
+    char code[5];
+    int aqui = (intptr_t)arg;
 
-//     while (1)
-//     {
-//         ligne = litLigne((liaisonsAqui + term)->pipeReceive[0]);
+    while (1)
+    {
+        ligne = litLigne((liaisonsAqui + aqui)->pipeReceive[0]);
 
-//         // printf("\nTraitement du Terminal %d...\n", term);
-//         printf("[InterArchive], demande reçue [Aquisition %d]: %s", term, ligne);
-//         decoupe(ligne, nTest, type, valeur);
-//         strncpy(code, nTest, 4);
+        // printf("\nTraitement du Terminal %d...\n", term);
+        printf("[InterArchive], message reçu [Aquisition %d]: %s", aqui, ligne);
+        decoupe(ligne, nTest, type, valeur);
+        strncpy(code, nTest, 4);
 
-//         sprintf(e.nTest, "%s", nTest);
-//         e.fdesc = (liaisonsAqui + term)->pipeSend[1];
-//         // printf("%d\n", e.fdesc);
-//         sem_wait(&vide);
-//         sem_wait(&mutex);
-//         ajouterEntree(memoire, e);
-//         afficherMemoire(memoire, tailleMem);
-//         sem_post(&mutex);
-//         if (strcmp(code, code_centre) == 0)
-//         {
-//             ecritLigne(liaisonValid.pipeSend[1], ligne);
-//         }
-//         else
-//         {
-//             ecritLigne(liaisonInter.pipeSend[1], ligne);
-//         }
-//     }
-//     return (void *)0;
-// }
+        sprintf(e.nTest, "%s", nTest);
+        e.fdesc = (liaisonsAqui + term)->pipeSend[1];
+        // printf("%d\n", e.fdesc);
+        sem_wait(&vide);
+        sem_wait(&mutex);
+        ajouterEntree(memoire, e);
+        afficherMemoire(memoire, tailleMem);
+        sem_post(&mutex);
+        if (strcmp(code, code_centre) == 0)
+        {
+            ecritLigne(liaisonValid.pipeSend[1], ligne);
+        }
+        else
+        {
+            ecritLigne(liaisonInter.pipeSend[1], ligne);
+        }
+    }
+    return (void *)0;
+}

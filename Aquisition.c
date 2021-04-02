@@ -21,9 +21,9 @@ tra_t *memoire;
 
 liaison_t *liaisonsTerm;
 liaison_t liaisonValid;
-liaison_t liaisonInter;
+// liaison_t liaisonInter;
 
-// int *fdtToa, *fdaTot, fdaTov, fdvToa, fdiToa, fdaToi;
+int fdiToa, fdaToi;
 
 sem_t vide, mutex;
 
@@ -43,6 +43,8 @@ int main(int argc, char **argv)
   fichier_resultats = argv[3];
   nbTerm = atoi(argv[4]);
   tailleMem = atoi(argv[5]);
+  fdaToi = atoi(argv[6]);
+  fdiToa = atoi(argv[7]);
   memoire = (tra_t *)malloc(tailleMem * sizeof(tra_t));
   liaisonsTerm = (liaison_t *)malloc(nbTerm * sizeof(liaison_t));
   // fd_res = open(fichier_resultats, O_RDONLY);
@@ -52,23 +54,23 @@ int main(int argc, char **argv)
   {
     pipe((liaisonsTerm + i)->pipeReceive);
     pipe((liaisonsTerm + i)->pipeSend);
-    printf("Terminal %d\n", i);
-    printf("pipeReceive: [%d, %d]\n", (liaisonsTerm + i)->pipeReceive[0], (liaisonsTerm + i)->pipeReceive[1]);
-    printf("pipeSend:    [%d, %d]\n", (liaisonsTerm + i)->pipeSend[0], (liaisonsTerm + i)->pipeSend[1]);
+    // printf("Terminal %d\n", i);
+    // printf("pipeReceive: [%d, %d]\n", (liaisonsTerm + i)->pipeReceive[0], (liaisonsTerm + i)->pipeReceive[1]);
+    // printf("pipeSend:    [%d, %d]\n", (liaisonsTerm + i)->pipeSend[0], (liaisonsTerm + i)->pipeSend[1]);
   }
 
   pipe(liaisonValid.pipeSend);
   pipe(liaisonValid.pipeReceive);
-  printf("Validation\n");
-  printf("pipeReceive: [%d, %d]\n", liaisonValid.pipeReceive[0], liaisonValid.pipeReceive[1]);
-  printf("pipeSend:    [%d, %d]\n", liaisonValid.pipeSend[0], liaisonValid.pipeSend[1]);
+  // printf("Validation\n");
+  // printf("pipeReceive: [%d, %d]\n", liaisonValid.pipeReceive[0], liaisonValid.pipeReceive[1]);
+  // printf("pipeSend:    [%d, %d]\n", liaisonValid.pipeSend[0], liaisonValid.pipeSend[1]);
   
 
-  pipe(liaisonInter.pipeSend);
-  pipe(liaisonInter.pipeReceive);
-  printf("InterArchive\n");
-  printf("pipeReceive: [%d, %d]\n", liaisonInter.pipeReceive[0], liaisonInter.pipeReceive[1]);
-  printf("pipeSend:    [%d, %d]\n", liaisonInter.pipeSend[0], liaisonInter.pipeSend[1]);
+  // // pipe(liaisonInter.pipeSend);
+  // // pipe(liaisonInter.pipeReceive);
+  // // printf("InterArchive\n");
+  // // printf("pipeReceive: [%d, %d]\n", liaisonInter.pipeReceive[0], liaisonInter.pipeReceive[1]);
+  // // printf("pipeSend:    [%d, %d]\n", liaisonInter.pipeSend[0], liaisonInter.pipeSend[1]);
   
   pid_t terminal;
   char fd1[5], fd2[5]/*, fd3[5]*/, nterm[5];
@@ -88,8 +90,8 @@ int main(int argc, char **argv)
       sprintf(fd1, "%d", (liaisonsTerm + i)->pipeSend[0]);
       sprintf(fd2, "%d", (liaisonsTerm + i)->pipeReceive[1]);
       sprintf(nterm, "%d", i);
-      printf("Rec. Terminal %d: fd1 = %s, fd2 = %s\n", i, fd1, fd2);
-      execlp("/usr/bin/xterm", "xterm", "-e", "./Terminal", fd1, fd2, "20", nterm, NULL);
+      // printf("Rec. Terminal %d: fd1 = %s, fd2 = %s\n", i, fd1, fd2);
+      execlp("/usr/bin/xterm", "xterm", "-e", "./Terminal", fd1, fd2, "32", nterm, NULL);
       break;
     default:
       // close((liaisonsTerm + i)->pipeReceive[0]);
@@ -111,7 +113,7 @@ int main(int argc, char **argv)
     sprintf(fd1, "%d", liaisonValid.pipeSend[0]);
     sprintf(fd2, "%d", liaisonValid.pipeReceive[1]);
     // sprintf(fd3, "%d", fd_res);
-    printf("Rec. Validation: fd1 = %s, fd2 = %s, fichier res = %s\n", fd1, fd2, fichier_resultats);
+    //printf("Rec. Validation: fd1 = %s, fd2 = %s, fichier res = %s\n", fd1, fd2, fichier_resultats);
     // execlp("./Validation", "./Validation", fd1, fd2, fd3, NULL);
     execlp("/usr/bin/xterm", "xterm", "-e", "./Validation", fd1, fd2, fichier_resultats, NULL);
     break;
@@ -187,7 +189,7 @@ void *traiterTerminal(void *arg)
     }
     else
     {
-      ecritLigne(liaisonInter.pipeSend[1], ligne);
+      ecritLigne(fdaToi, ligne);
     }
   }
   return (void *)0;
@@ -233,7 +235,7 @@ void *traiterInterArchive()
   printf("\nTraitement du serveur InterArchive...\n");
   while (1)
   {
-    ligne = litLigne(liaisonInter.pipeReceive[0]);
+    ligne = litLigne(fdiToa);
     printf("[Aquisition], message reçu [InterArchive]: %s", ligne);
     decoupe(ligne, nTest, type, valeur);
 
@@ -251,7 +253,7 @@ void *traiterInterArchive()
     else
     {
       sprintf(e.nTest, "%s", nTest);
-      e.fdesc = liaisonInter.pipeSend[1];
+      e.fdesc = fdaToi;
       sem_wait(&vide);
       sem_wait(&mutex);
       ajouterEntree(memoire, e);

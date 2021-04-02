@@ -69,17 +69,16 @@ int main(int argc, char **argv)
         // printf("%s %s %s %d\n", *(noms_centres + i), *(codes_centres + i), *(fichiers_res + i), *(nb_terms + i));
         pipe((liaisonsAqui + i)->pipeReceive);
         pipe((liaisonsAqui + i)->pipeSend);
-        // printf("Aquisition %d\n", i);
-        // printf("pipeReceive: [%d, %d]\n", (liaisonsAqui + i)->pipeReceive[0], (liaisonsAqui + i)->pipeReceive[1]);
-        // printf("pipeSend:    [%d, %d]\n", (liaisonsAqui + i)->pipeSend[0], (liaisonsAqui + i)->pipeSend[1]);
+        printf("Aquisition %d\n", i);
+        printf("pipeReceive: [%d, %d]\n", (liaisonsAqui + i)->pipeReceive[0], (liaisonsAqui + i)->pipeReceive[1]);
+        printf("pipeSend:    [%d, %d]\n", (liaisonsAqui + i)->pipeSend[0], (liaisonsAqui + i)->pipeSend[1]);
     }
 
     pid_t aquisition;
-    char nom[20], code[20], fic[20], nt[20], tm[4]; /*, fd3[5], nAqui[5]*/
-    ;
+    char nom[20], code[20], fic[20], nt[20], tm[4], fd1[5], fd2[5];
 
     // création des processus Aquisition avec fork et execlp
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < nbCentres; i++)
     {
         printf("%d\n", i);
         switch (aquisition = fork())
@@ -94,10 +93,12 @@ int main(int argc, char **argv)
             sprintf(fic, "%s", *(fichiers_res + i));
             sprintf(nt, "%d", *(nb_terms + i));
             sprintf(tm, "%d", tailleMem);
-            // printf("Rec. Aquisition %d: fd1 = %s, fd2 = %s\n", i, fd1, fd2);
+            sprintf(fd1, "%d", (liaisonsAqui + i)->pipeReceive[1]);
+            sprintf(fd2, "%d", (liaisonsAqui + i)->pipeSend[0]);
+            printf("Rec. Aquisition %d: fd1 = %s, fd2 = %s\n", i, fd1, fd2);
 
-            printf("[Rec. Aquisition %d]: %s %s %s %s %s\n", i, nom, code, fic, nt, tm);
-            execlp("/usr/bin/xterm", "xterm", "-e", "./Aquisition", nom, code, fic, nt, tm, NULL);
+            printf("[Rec. Aquisition %d]: %s %s %s %s %s %s %s\n", i, nom, code, fic, nt, tm, fd1, fd2);
+            execlp("/usr/bin/xterm", "xterm", "-e", "./Aquisition", nom, code, fic, nt, tm, fd1, fd2, NULL);
             break;
         default:
             break;
@@ -143,7 +144,6 @@ void *traiterAquisition(void *arg)
     {
         ligne = litLigne((liaisonsAqui + aqui)->pipeReceive[0]);
 
-        // printf("\nTraitement du Terminal %d...\n", term);
         printf("[InterArchive], message reçu [Aquisition %d]: %s", aqui, ligne);
         decoupe(ligne, nTest, type, valeur);
         strncpy(code, nTest, 4);
